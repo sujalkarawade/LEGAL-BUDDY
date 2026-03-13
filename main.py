@@ -213,6 +213,43 @@ def groq_model_candidates() -> list[str]:
     return candidates
 
 
+def build_summary_docs(
+    docs: list[Document],
+    max_input_tokens: int = 3500,
+    approx_chars_per_token: int = 4,
+) -> list[Document]:
+    """Trim document list so Groq token limits are not exceeded.
+
+    Groq free tiers often allow around 12k input tokens; we stay under that
+    by approximating \(1\) token \(\approx\) 4 characters and truncating.
+    """
+    char_limit = max_input_tokens * approx_chars_per_token
+    selected: list[Document] = []
+    total_chars = 0
+
+    for doc in docs:
+        if total_chars >= char_limit:
+            break
+
+        content = doc.page_content or ""
+        remaining = char_limit - total_chars
+        if remaining <= 0:
+            break
+
+        if len(content) <= remaining:
+            selected.append(doc)
+            total_chars += len(content)
+        else:
+            # Truncate the last document so we don't exceed the limit
+            selected.append(
+                Document(page_content=content[:remaining], metadata=doc.metadata)
+            )
+            total_chars += remaining
+            break
+
+    return selected
+
+
 def invoke_with_groq_fallback(factory):
     last_error = None
 
@@ -413,9 +450,17 @@ if uploaded_file and st.button("Summarize Document"):
         st.warning("Embed the document first.")
     else:
         try:
+            # Prefer only the uploaded PDF chunks for summarisation
+            all_docs: list[Document] = st.session_state.final_docs
+            pdf_docs = [
+                doc for doc in all_docs if doc.metadata.get("source") == "PDF"
+            ] or all_docs
+
+            summary_docs = build_summary_docs(pdf_docs)
+
             response = invoke_with_groq_fallback(
                 lambda llm: create_stuff_documents_chain(llm, summary_prompt).invoke(
-                    {"context": st.session_state.final_docs}
+                    {"context": summary_docs}
                 )
             )
             st.subheader("Document Summary")
