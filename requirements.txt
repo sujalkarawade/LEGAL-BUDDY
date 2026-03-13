@@ -1,0 +1,12 @@
+streamlit
+nest_asyncio
+pandas
+langchain
+langchain-classic
+langchain-core
+langchain-community
+langchain-google-genai
+langchain-groq
+langchain-text-splitters
+faiss-cpu
+pypdf
