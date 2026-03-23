@@ -5,6 +5,8 @@ import json
 import os
 import re
 import time
+import urllib.error
+import urllib.request
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -13,6 +15,7 @@ import nest_asyncio
 import numpy as np
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_classic.chains import create_retrieval_chain
@@ -20,11 +23,12 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_groq import ChatGroq
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 BASE_DIR = Path(__file__).parent
+load_dotenv(BASE_DIR / ".env")
+
 UPLOAD_DIR = BASE_DIR / "uploaded_docs"
 RAG_PATH = BASE_DIR / "civil_law(RAG).json"
 LAWYER_PATH = BASE_DIR / "lawyer(RAG).json"
@@ -36,7 +40,8 @@ GROQ_MODEL_CANDIDATES = [
     DEFAULT_GROQ_MODEL,
     "llama-3.3-70b-versatile",
 ]
-EMBEDDING_MODEL = "gemini-embedding-001"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+DEFAULT_OPENROUTER_EMBEDDING_MODEL = "openai/text-embedding-3-small"
 PDF_CHUNK_SIZE = 4000
 PDF_CHUNK_OVERLAP = 400
 FREE_TIER_EMBED_ITEM_BUDGET = 95
@@ -58,12 +63,15 @@ def get_config_value(name: str) -> str:
 
 
 GROQ_API_KEY = get_config_value("GROQ_API_KEY")
-GOOGLE_API_KEY = get_config_value("GOOGLE_API_KEY")
+OPENROUTER_API_KEY = get_config_value("OPENROUTER_API_KEY")
+OPENROUTER_EMBEDDING_MODEL = (
+    get_config_value("OPENROUTER_EMBEDDING_MODEL") or DEFAULT_OPENROUTER_EMBEDDING_MODEL
+)
 
 if GROQ_API_KEY:
     os.environ["GROQ_API_KEY"] = GROQ_API_KEY
-if GOOGLE_API_KEY:
-    os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+if OPENROUTER_API_KEY:
+    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
 
 
 qa_prompt = ChatPromptTemplate.from_template(
@@ -88,13 +96,6 @@ Explain each legal clause in simple terms and highlight any risks mentioned in t
 <context>
 {context}
 </context>
-"""
-)
-
-clause_prompt = ChatPromptTemplate.from_template(
-    """
-Explain the following legal clause in simple terms and highlight any risks:
-{input}
 """
 )
 
@@ -125,6 +126,65 @@ class LocalHashedEmbeddings(Embeddings):
 
     def embed_query(self, text: str) -> list[float]:
         return self._embed_text(text)
+
+
+class OpenRouterEmbeddings(Embeddings):
+    """OpenRouter embeddings via its OpenAI-compatible API."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        base_url: str = OPENROUTER_BASE_URL,
+        app_name: str = "Legal Buddy",
+        site_url: str = "http://localhost:8501",
+    ):
+        self.api_key = api_key
+        self.model = model
+        self.base_url = base_url.rstrip("/")
+        self.app_name = app_name
+        self.site_url = site_url
+
+    def _fetch_embeddings(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+
+        payload = json.dumps({"model": self.model, "input": texts}).encode("utf-8")
+        request = urllib.request.Request(
+            f"{self.base_url}/embeddings",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": self.site_url,
+                "X-Title": self.app_name,
+            },
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                body = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="ignore").strip()
+            reason = detail or exc.reason
+            raise RuntimeError(f"OpenRouter embeddings request failed ({exc.code}): {reason}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"OpenRouter embeddings request failed: {exc.reason}") from exc
+
+        data = body.get("data", [])
+        if not data:
+            raise RuntimeError("OpenRouter embeddings response did not include any vectors.")
+
+        ordered = sorted(data, key=lambda item: item.get("index", 0))
+        return [item["embedding"] for item in ordered]
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return self._fetch_embeddings(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        embeddings = self._fetch_embeddings([text])
+        return embeddings[0] if embeddings else []
 
 
 CLAUSE_PATTERNS = [
@@ -181,10 +241,13 @@ def build_llm(model_name: str) -> ChatGroq:
 
 
 @st.cache_resource(show_spinner=False)
-def build_google_embeddings() -> GoogleGenerativeAIEmbeddings:
-    if not GOOGLE_API_KEY:
-        raise RuntimeError("Missing GOOGLE_API_KEY. Set it in the environment or Streamlit secrets.")
-    return GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL, api_key=GOOGLE_API_KEY)
+def build_openrouter_embeddings() -> OpenRouterEmbeddings:
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("Missing OPENROUTER_API_KEY. Set it in the environment or Streamlit secrets.")
+    return OpenRouterEmbeddings(
+        api_key=OPENROUTER_API_KEY,
+        model=OPENROUTER_EMBEDDING_MODEL,
+    )
 
 
 @st.cache_resource(show_spinner=False)
@@ -194,13 +257,13 @@ def build_local_embeddings() -> LocalHashedEmbeddings:
 
 def summarize_embedding_failure(exc: Exception) -> str:
     message = str(exc)
-    if "RESOURCE_EXHAUSTED" in message or "429" in message:
-        return "Google embedding quota is exhausted for the current rate-limit window"
-    if "PERMISSION_DENIED" in message or "403" in message:
-        return "Google rejected the embedding request"
-    if "NOT_FOUND" in message or "404" in message:
-        return "Google embedding model is unavailable"
-    return "Google embeddings are unavailable right now"
+    if "429" in message or "rate limit" in message.lower():
+        return "OpenRouter embedding quota or rate limit was reached"
+    if "403" in message or "401" in message:
+        return "OpenRouter rejected the embedding request"
+    if "404" in message or "not found" in message.lower():
+        return "The selected OpenRouter embedding model is unavailable"
+    return "OpenRouter embeddings are unavailable right now"
 
 
 def groq_model_candidates() -> list[str]:
@@ -221,7 +284,7 @@ def build_summary_docs(
     """Trim document list so Groq token limits are not exceeded.
 
     Groq free tiers often allow around 12k input tokens; we stay under that
-    by approximating \(1\) token \(\approx\) 4 characters and truncating.
+    by approximating 1 token as about 4 characters and truncating.
     """
     char_limit = max_input_tokens * approx_chars_per_token
     selected: list[Document] = []
@@ -276,16 +339,16 @@ def invoke_with_groq_fallback(factory):
 
 
 def build_vector_store(all_docs: list[Document], prefer_local: bool = False) -> tuple[FAISS, str]:
-    if GOOGLE_API_KEY and not prefer_local:
+    if OPENROUTER_API_KEY and not prefer_local:
         try:
-            vector_store = FAISS.from_documents(all_docs, build_google_embeddings())
-            return vector_store, "Google Gemini"
+            vector_store = FAISS.from_documents(all_docs, build_openrouter_embeddings())
+            return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
         except Exception as exc:
             st.warning(f"{summarize_embedding_failure(exc)}. Falling back to local embeddings.")
-    elif GOOGLE_API_KEY and prefer_local:
-        st.info("Large upload detected. Using local embeddings to avoid Google free-tier quota issues.")
+    elif OPENROUTER_API_KEY and prefer_local:
+        st.info("Large upload detected. Using local embeddings to avoid OpenRouter rate-limit or cost issues.")
     else:
-        st.info("GOOGLE_API_KEY not found. Using local embeddings.")
+        st.info("OPENROUTER_API_KEY not found. Using local embeddings.")
 
     vector_store = FAISS.from_documents(all_docs, build_local_embeddings())
     return vector_store, "Local fallback"
@@ -419,7 +482,7 @@ with st.sidebar:
 
     if missing_keys:
         st.info("Set these before using summaries and Q&A: " + ", ".join(missing_keys))
-    elif GOOGLE_API_KEY:
+    elif OPENROUTER_API_KEY:
         st.success("API keys detected")
     else:
         st.info("GROQ key detected. Embeddings will use the built-in local fallback.")
@@ -434,7 +497,7 @@ if uploaded_file:
         file.write(uploaded_file.getbuffer())
     st.success("Document uploaded successfully.")
     st.caption(
-        "Embeddings use larger chunks now to stay within Google's free-tier quota whenever possible."
+        "Embeddings use larger chunks now to reduce OpenRouter cost and rate-limit issues whenever possible."
     )
 
 if uploaded_file and file_path and st.button("Embed Document"):

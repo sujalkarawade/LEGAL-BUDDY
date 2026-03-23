@@ -1,11 +1,10 @@
 streamlit
 nest_asyncio
 pandas
-langchain
+python-dotenv
 langchain-classic
 langchain-core
 langchain-community
-langchain-google-genai
 langchain-groq
 langchain-text-splitters
 faiss-cpu

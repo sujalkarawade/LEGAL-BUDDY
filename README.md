@@ -9,11 +9,12 @@
 python -m pip install -r requirements.txt
 ```
 
-3. Set your API keys in PowerShell:
+3. Add your API keys to the `.env` file in the project root:
 
-```powershell
-$env:GROQ_API_KEY="your-groq-api-key"
-$env:GOOGLE_API_KEY="your-google-api-key"
+```env
+GROQ_API_KEY=your-groq-api-key
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small
 ```
 
 4. Start the app:
@@ -26,6 +27,7 @@ The app opens at `http://localhost:8501`.
 
 ## Notes
 
-- `GOOGLE_API_KEY` is used for embeddings.
+- `OPENROUTER_API_KEY` is used for embeddings.
 - `GROQ_API_KEY` is used for summaries and question answering.
-- The app now reads keys from environment variables or Streamlit secrets.
+- `OPENROUTER_EMBEDDING_MODEL` is optional. If you omit it, the app uses `openai/text-embedding-3-small`.
+- The app now reads keys from `.env`, environment variables, or Streamlit secrets.
