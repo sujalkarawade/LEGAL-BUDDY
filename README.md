@@ -1,15 +1,50 @@
 # Legal Buddy
 
-## Run locally
+Legal Buddy is a Streamlit app for uploading legal PDFs, building embeddings, summarizing documents, answering questions, and flagging potentially risky clauses.
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
+## Project structure
 
-```powershell
-python -m pip install -r requirements.txt
+```text
+LEGAL BUDDY/
+|-- main.py
+|-- app/
+|   |-- config.py
+|   |-- data.py
+|   |-- embeddings.py
+|   |-- llm.py
+|   |-- analysis.py
+|   |-- document_processing.py
+|   |-- prompts.py
+|   |-- ui.py
+|-- assets/
+|   |-- styles.css
+|   |-- disclaimer.html
+|-- requirements.txt
+|-- .env
 ```
 
-3. Add your API keys to the `.env` file in the project root:
+## Run locally
+
+1. Open PowerShell in `d:\DON\LEGAL BUDDY`.
+2. Activate the virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks script execution, run this once for the current shell and try again:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
+
+3. Install dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
+
+4. Create or update `.env` in the project root:
 
 ```env
 GROQ_API_KEY=your-groq-api-key
@@ -17,17 +52,24 @@ OPENROUTER_API_KEY=your-openrouter-api-key
 OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small
 ```
 
-4. Start the app:
+5. Start the app:
 
 ```powershell
-python -m streamlit run main.py
+streamlit run main.py
 ```
 
-The app opens at `http://localhost:8501`.
+6. Open `http://localhost:8501`.
+
+## API key behavior
+
+- `GROQ_API_KEY` is required for summaries and question answering.
+- `OPENROUTER_API_KEY` is optional and is used for embeddings when available.
+- If `OPENROUTER_API_KEY` is missing or rate-limited, the app falls back to local embeddings.
+- `OPENROUTER_EMBEDDING_MODEL` is optional. If omitted, the app uses `openai/text-embedding-3-small`.
+- The app can read values from `.env`, environment variables, or Streamlit secrets.
 
 ## Notes
 
-- `OPENROUTER_API_KEY` is used for embeddings.
-- `GROQ_API_KEY` is used for summaries and question answering.
-- `OPENROUTER_EMBEDDING_MODEL` is optional. If you omit it, the app uses `openai/text-embedding-3-small`.
-- The app now reads keys from `.env`, environment variables, or Streamlit secrets.
+- Uploaded PDFs are stored in `uploaded_docs/`.
+- The sidebar shows separate detection blocks for available API providers.
+- `main.py` is now the entrypoint only; most logic lives inside the `app/` package.

@@ -1,0 +1,81 @@
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import streamlit as st
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from app.analysis import identify_clauses
+from app.config import (
+    FREE_TIER_EMBED_ITEM_BUDGET,
+    OPENROUTER_API_KEY,
+    OPENROUTER_EMBEDDING_MODEL,
+    PDF_CHUNK_OVERLAP,
+    PDF_CHUNK_SIZE,
+)
+from app.embeddings import (
+    build_local_embeddings,
+    build_openrouter_embeddings,
+    summarize_embedding_failure,
+)
+
+
+def build_vector_store(all_docs: list[Document], prefer_local: bool = False) -> tuple[FAISS, str]:
+    if OPENROUTER_API_KEY and not prefer_local:
+        try:
+            vector_store = FAISS.from_documents(all_docs, build_openrouter_embeddings())
+            return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
+        except Exception as exc:
+            st.warning(f"{summarize_embedding_failure(exc)}. Falling back to local embeddings.")
+    elif OPENROUTER_API_KEY and prefer_local:
+        st.info("Large upload detected. Using local embeddings to avoid OpenRouter rate-limit or cost issues.")
+    else:
+        st.info("OPENROUTER_API_KEY not found. Using local embeddings.")
+
+    vector_store = FAISS.from_documents(all_docs, build_local_embeddings())
+    return vector_store, "Local fallback"
+
+
+def vector_embedding(path: Path, civil_rag: list[dict]) -> None:
+    loader = PyPDFLoader(str(path))
+    docs = loader.load()
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=PDF_CHUNK_SIZE,
+        chunk_overlap=PDF_CHUNK_OVERLAP,
+    )
+    final_docs = splitter.split_documents(docs)
+
+    def process_pdf_chunk(doc: Document) -> Document:
+        metadata = dict(doc.metadata)
+        metadata.update({"source": "PDF", "clauses": identify_clauses(doc.page_content)})
+        return Document(page_content=doc.page_content, metadata=metadata)
+
+    def process_rag_entry(entry: dict) -> Document | None:
+        if entry.get("type") == "clause":
+            text = entry["clause"] + "\n" + entry["layman_terms"]
+        elif entry.get("type") == "term":
+            text = entry["term"] + "\n" + entry["layman_example"]
+        else:
+            return None
+
+        return Document(
+            page_content=text,
+            metadata={"source": "RAG", "clauses": identify_clauses(text)},
+        )
+
+    with ThreadPoolExecutor() as executor:
+        pdf_docs = list(executor.map(process_pdf_chunk, final_docs))
+        rag_docs = list(executor.map(process_rag_entry, civil_rag))
+        rag_docs = [doc for doc in rag_docs if doc is not None]
+
+    total_embed_items = len(pdf_docs) + len(rag_docs)
+    all_docs = pdf_docs + rag_docs
+    prefer_local = total_embed_items > FREE_TIER_EMBED_ITEM_BUDGET
+    st.session_state.vectors, st.session_state.embedding_backend = build_vector_store(
+        all_docs,
+        prefer_local=prefer_local,
+    )
+    st.session_state.final_docs = all_docs
+
