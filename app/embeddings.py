@@ -56,7 +56,12 @@ class OpenRouterEmbeddings(Embeddings):
     def _fetch_embeddings(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        payload = json.dumps({"model": self.model, "input": texts}).encode("utf-8")
+            
+        # OpenRouter has a bug where `input: ["single string"]` can return 404.
+        # Passing `input: "single string"` or `input: ["two", "strings"]` works.
+        input_data = texts[0] if len(texts) == 1 else texts
+        payload = json.dumps({"model": self.model, "input": input_data}).encode("utf-8")
+        
         req = urllib.request.Request(
             f"{self.base_url}/embeddings",
             data=payload,
@@ -76,6 +81,12 @@ class OpenRouterEmbeddings(Embeddings):
             raise RuntimeError(f"OpenRouter embeddings failed ({exc.code}): {detail or exc.reason}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"OpenRouter embeddings failed: {exc.reason}") from exc
+            
+        if "error" in body:
+            error_data = body["error"]
+            err_msg = error_data.get("message", error_data) if isinstance(error_data, dict) else error_data
+            raise RuntimeError(f"OpenRouter failed: {err_msg}")
+            
         data = body.get("data", [])
         if not data:
             raise RuntimeError("OpenRouter embeddings response had no vectors.")

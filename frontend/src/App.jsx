@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { embedDocument, getAnalysis, getStatus, summarize, uploadDocument } from "./api";
-import AnalysisPanel from "./components/AnalysisPanel";
-import QAPanel from "./components/QAPanel";
 import Sidebar from "./components/Sidebar";
-import "./index.css";
+
+import UploadPage from "./pages/UploadPage";
+import SummaryPage from "./pages/SummaryPage";
+import ClausesPage from "./pages/ClausesPage";
+import QAPage from "./pages/QAPage";
 
 export default function App() {
   const [status, setStatus] = useState({ groq: false, openrouter: false });
@@ -12,16 +15,21 @@ export default function App() {
   const [embedBackend, setEmbedBackend] = useState("");
   const [summary, setSummary] = useState("");
   const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState("");
+  
+  // App level loading state
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getStatus().then(setStatus).catch(() => {});
   }, []);
 
   async function handleUpload(file) {
+    if (!file) return;
     setError("");
-    setLoading("Uploading...");
+    setLoading(true);
     try {
       const data = await uploadDocument(file);
       setFilename(data.filename);
@@ -31,91 +39,114 @@ export default function App() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading("");
+      setLoading(false);
     }
   }
 
   async function handleEmbed() {
     if (!filename) return;
     setError("");
-    setLoading("Building embeddings...");
+    setLoading(true);
     try {
       const data = await embedDocument(filename);
       setEmbedded(true);
       setEmbedBackend(data.backend);
+      // Auto redirect to summary after embed
+      navigate('/summary');
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading("");
+      setLoading(false);
     }
   }
 
   async function handleSummarize() {
     setError("");
-    setLoading("Summarizing...");
+    setLoading(true);
     try {
       const data = await summarize();
       setSummary(data.summary);
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading("");
+      setLoading(false);
     }
   }
 
   async function handleAnalyze() {
     setError("");
-    setLoading("Analyzing clauses...");
+    setLoading(true);
     try {
       const data = await getAnalysis();
       setAnalysis(data);
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading("");
+      setLoading(false);
     }
   }
 
   return (
-    <div className="layout">
+    <div className="flex h-screen overflow-hidden bg-black text-gray-100 selection:bg-accent-blue/30 selection:text-white relative">
       <Sidebar status={status} embedded={embedded} embedBackend={embedBackend} />
-      <main className="main">
-        <h1>Legal Document Q&amp;A Assistant</h1>
-        <p className="subtitle">Upload a legal PDF, build embeddings, then summarize or ask questions about it.</p>
+      
+      <main className="flex-1 overflow-y-auto flex flex-col relative">
+        <div className="p-8 flex-1">
+          <Routes>
+            <Route path="/" element={<Navigate to="/upload" replace />} />
+            
+            <Route 
+              path="/upload" 
+              element={
+                <UploadPage 
+                  filename={filename} 
+                  embedded={embedded}
+                  loading={loading}
+                  error={error}
+                  handleUpload={handleUpload}
+                  handleEmbed={handleEmbed}
+                />
+              } 
+            />
+            
+            <Route 
+              path="/summary" 
+              element={
+                <SummaryPage 
+                  summary={summary}
+                  loading={loading}
+                  embedded={embedded}
+                  error={error}
+                  handleSummarize={handleSummarize}
+                />
+              } 
+            />
+            
+            <Route 
+              path="/clauses" 
+              element={
+                <ClausesPage 
+                  analysis={analysis}
+                  loading={loading}
+                  embedded={embedded}
+                  error={error}
+                  handleAnalyze={handleAnalyze}
+                />
+              } 
+            />
+            
+            <Route 
+              path="/qa" 
+              element={<QAPage embedded={embedded} />} 
+            />
+          </Routes>
+        </div>
 
-        <section className="card">
-          <label className="upload-label">
-            <input type="file" accept=".pdf" onChange={(e) => e.target.files[0] && handleUpload(e.target.files[0])} />
-            <span>Choose PDF</span>
-          </label>
-          {filename && <span className="filename">{filename}</span>}
-        </section>
-
-        {filename && (
-          <section className="card actions">
-            <button onClick={handleEmbed} disabled={!!loading}>Embed Document</button>
-            <button onClick={handleSummarize} disabled={!embedded || !!loading}>Summarize</button>
-            <button onClick={handleAnalyze} disabled={!embedded || !!loading}>Analyze Clauses</button>
-          </section>
-        )}
-
-        {loading && <p className="info">{loading}</p>}
-        {error && <p className="error">{error}</p>}
-
-        {summary && (
-          <section className="card">
-            <h2>Summary</h2>
-            <p>{summary}</p>
-          </section>
-        )}
-
-        {embedded && <QAPanel />}
-        {analysis && <AnalysisPanel data={analysis} />}
-
-        <footer className="disclaimer">
-          Disclaimer: This tool provides simplified explanations of legal documents. It is not a substitute for professional legal advice.
+        <footer className="w-full mt-auto p-4 border-t border-white/[0.06] bg-black/90 backdrop-blur-sm text-center text-xs text-gray-600">
+          Disclaimer: This tool provides AI-assisted insights and is not a substitute for professional legal advice.
         </footer>
       </main>
     </div>
   );
 }
+
