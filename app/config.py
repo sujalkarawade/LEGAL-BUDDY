@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import nest_asyncio
-import streamlit as st
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,30 +28,17 @@ PDF_CHUNK_OVERLAP = 400
 FREE_TIER_EMBED_ITEM_BUDGET = 95
 LOCAL_EMBEDDING_DIMENSION = 512
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_EMBEDDING_MODEL = (
+    os.getenv("OPENROUTER_EMBEDDING_MODEL", "").strip() or DEFAULT_OPENROUTER_EMBEDDING_MODEL
+)
+
 
 def initialize_runtime() -> None:
     load_dotenv(BASE_DIR / ".env")
-
     try:
         asyncio.get_running_loop()
     except RuntimeError:
         asyncio.set_event_loop(asyncio.new_event_loop())
     nest_asyncio.apply()
-
-    if GROQ_API_KEY:
-        os.environ["GROQ_API_KEY"] = GROQ_API_KEY
-    if OPENROUTER_API_KEY:
-        os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
-
-
-def get_config_value(name: str) -> str:
-    try:
-        return str(st.secrets[name]).strip()
-    except Exception:
-        return os.getenv(name, "").strip()
-
-GROQ_API_KEY = get_config_value("GROQ_API_KEY")
-OPENROUTER_API_KEY = get_config_value("OPENROUTER_API_KEY")
-OPENROUTER_EMBEDDING_MODEL = (
-    get_config_value("OPENROUTER_EMBEDDING_MODEL") or DEFAULT_OPENROUTER_EMBEDDING_MODEL
-)

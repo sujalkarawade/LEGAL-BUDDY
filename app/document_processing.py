@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -28,17 +27,17 @@ def build_vector_store(all_docs: list[Document], prefer_local: bool = False) -> 
             vector_store = FAISS.from_documents(all_docs, build_openrouter_embeddings())
             return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
         except Exception as exc:
-            st.warning(f"{summarize_embedding_failure(exc)}. Falling back to local embeddings.")
+            print(f"Warning: {summarize_embedding_failure(exc)}. Falling back to local embeddings.")
     elif OPENROUTER_API_KEY and prefer_local:
-        st.info("Large upload detected. Using local embeddings to avoid OpenRouter rate-limit or cost issues.")
+        print("Info: Large upload detected. Using local embeddings.")
     else:
-        st.info("OPENROUTER_API_KEY not found. Using local embeddings.")
+        print("Info: OPENROUTER_API_KEY not found. Using local embeddings.")
 
     vector_store = FAISS.from_documents(all_docs, build_local_embeddings())
     return vector_store, "Local fallback"
 
 
-def vector_embedding(path: Path, civil_rag: list[dict]) -> None:
+def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, list[Document]]:
     loader = PyPDFLoader(str(path))
     docs = loader.load()
     splitter = RecursiveCharacterTextSplitter(
@@ -59,7 +58,6 @@ def vector_embedding(path: Path, civil_rag: list[dict]) -> None:
             text = entry["term"] + "\n" + entry["layman_example"]
         else:
             return None
-
         return Document(
             page_content=text,
             metadata={"source": "RAG", "clauses": identify_clauses(text)},
@@ -73,9 +71,5 @@ def vector_embedding(path: Path, civil_rag: list[dict]) -> None:
     total_embed_items = len(pdf_docs) + len(rag_docs)
     all_docs = pdf_docs + rag_docs
     prefer_local = total_embed_items > FREE_TIER_EMBED_ITEM_BUDGET
-    st.session_state.vectors, st.session_state.embedding_backend = build_vector_store(
-        all_docs,
-        prefer_local=prefer_local,
-    )
-    st.session_state.final_docs = all_docs
-
+    vectors, backend_name = build_vector_store(all_docs, prefer_local=prefer_local)
+    return vectors, backend_name, all_docs

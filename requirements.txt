@@ -1,4 +1,6 @@
-streamlit
+fastapi
+uvicorn[standard]
+python-multipart
 nest_asyncio
 pandas
 python-dotenv
@@ -9,3 +11,4 @@ langchain-groq
 langchain-text-splitters
 faiss-cpu
 pypdf
+numpy

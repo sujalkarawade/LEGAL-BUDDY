@@ -3,9 +3,9 @@ import json
 import re
 import urllib.error
 import urllib.request
+from functools import lru_cache
 
 import numpy as np
-import streamlit as st
 from langchain_core.embeddings import Embeddings
 
 from app.config import (
@@ -17,7 +17,7 @@ from app.config import (
 
 
 class LocalHashedEmbeddings(Embeddings):
-    """Offline fallback embeddings to avoid external quota limits."""
+    """Offline fallback embeddings."""
 
     def __init__(self, dimension: int = LOCAL_EMBEDDING_DIMENSION):
         self.dimension = dimension
@@ -25,20 +25,18 @@ class LocalHashedEmbeddings(Embeddings):
     def _embed_text(self, text: str) -> list[float]:
         vector = np.zeros(self.dimension, dtype=np.float32)
         tokens = re.findall(r"\b\w+\b", text.lower())
-
         for token in tokens:
             digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
             index = int.from_bytes(digest[:4], "little") % self.dimension
             sign = 1.0 if digest[4] % 2 == 0 else -1.0
             vector[index] += sign
-
         norm = np.linalg.norm(vector)
         if norm > 0:
             vector /= norm
         return vector.tolist()
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return [self._embed_text(text) for text in texts]
+        return [self._embed_text(t) for t in texts]
 
     def embed_query(self, text: str) -> list[float]:
         return self._embed_text(text)
@@ -47,14 +45,8 @@ class LocalHashedEmbeddings(Embeddings):
 class OpenRouterEmbeddings(Embeddings):
     """OpenRouter embeddings via its OpenAI-compatible API."""
 
-    def __init__(
-        self,
-        api_key: str,
-        model: str,
-        base_url: str = OPENROUTER_BASE_URL,
-        app_name: str = "Legal Buddy",
-        site_url: str = "http://localhost:8501",
-    ):
+    def __init__(self, api_key: str, model: str, base_url: str = OPENROUTER_BASE_URL,
+                 app_name: str = "Legal Buddy", site_url: str = "http://localhost:8000"):
         self.api_key = api_key
         self.model = model
         self.base_url = base_url.rstrip("/")
@@ -64,9 +56,8 @@ class OpenRouterEmbeddings(Embeddings):
     def _fetch_embeddings(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-
         payload = json.dumps({"model": self.model, "input": texts}).encode("utf-8")
-        request = urllib.request.Request(
+        req = urllib.request.Request(
             f"{self.base_url}/embeddings",
             data=payload,
             headers={
@@ -77,43 +68,34 @@ class OpenRouterEmbeddings(Embeddings):
             },
             method="POST",
         )
-
         try:
-            with urllib.request.urlopen(request, timeout=60) as response:
-                body = json.loads(response.read().decode("utf-8"))
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore").strip()
-            reason = detail or exc.reason
-            raise RuntimeError(f"OpenRouter embeddings request failed ({exc.code}): {reason}") from exc
+            raise RuntimeError(f"OpenRouter embeddings failed ({exc.code}): {detail or exc.reason}") from exc
         except urllib.error.URLError as exc:
-            raise RuntimeError(f"OpenRouter embeddings request failed: {exc.reason}") from exc
-
+            raise RuntimeError(f"OpenRouter embeddings failed: {exc.reason}") from exc
         data = body.get("data", [])
         if not data:
-            raise RuntimeError("OpenRouter embeddings response did not include any vectors.")
-
-        ordered = sorted(data, key=lambda item: item.get("index", 0))
-        return [item["embedding"] for item in ordered]
+            raise RuntimeError("OpenRouter embeddings response had no vectors.")
+        return [item["embedding"] for item in sorted(data, key=lambda x: x.get("index", 0))]
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return self._fetch_embeddings(texts)
 
     def embed_query(self, text: str) -> list[float]:
-        embeddings = self._fetch_embeddings([text])
-        return embeddings[0] if embeddings else []
+        return (self._fetch_embeddings([text]) or [[]])[0]
 
 
-@st.cache_resource(show_spinner=False)
+@lru_cache(maxsize=1)
 def build_openrouter_embeddings() -> OpenRouterEmbeddings:
     if not OPENROUTER_API_KEY:
-        raise RuntimeError("Missing OPENROUTER_API_KEY. Set it in the environment or Streamlit secrets.")
-    return OpenRouterEmbeddings(
-        api_key=OPENROUTER_API_KEY,
-        model=OPENROUTER_EMBEDDING_MODEL,
-    )
+        raise RuntimeError("Missing OPENROUTER_API_KEY.")
+    return OpenRouterEmbeddings(api_key=OPENROUTER_API_KEY, model=OPENROUTER_EMBEDDING_MODEL)
 
 
-@st.cache_resource(show_spinner=False)
+@lru_cache(maxsize=1)
 def build_local_embeddings() -> LocalHashedEmbeddings:
     return LocalHashedEmbeddings()
 
@@ -127,4 +109,3 @@ def summarize_embedding_failure(exc: Exception) -> str:
     if "404" in message or "not found" in message.lower():
         return "The selected OpenRouter embedding model is unavailable"
     return "OpenRouter embeddings are unavailable right now"
-
