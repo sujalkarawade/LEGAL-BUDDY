@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Send, Bot, User, FileSearch } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { askQuestion } from "../api";
+import ReactMarkdown from "react-markdown";
 
 export default function QAPage({ embedded }) {
   const [messages, setMessages] = useState([]);
@@ -87,7 +88,13 @@ export default function QAPage({ embedded }) {
                       msg.role === "system" ? "bg-red-500/10 text-red-400 rounded-tl-sm border border-red-500/20" : 
                       "bg-dark-700/80 text-gray-200 border border-white/[0.06] rounded-tl-sm"}`}
                   >
-                    {msg.text}
+                    {msg.role === "assistant" ? (
+                      <div className="[&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-3 [&_h1]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mb-2 [&_h2]:mt-3 [&_h3]:font-semibold [&_h3]:text-gray-100 [&_h3]:mb-1 [&_h3]:mt-2 [&_strong]:text-white [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ul]:space-y-1 [&_ul]:mt-2 [&_ol]:list-decimal [&_ol]:ml-5 [&_ol]:space-y-1 [&_ol]:mt-2 [&_li]:text-gray-300 [&_li]:leading-7 [&_p]:mb-2 [&_p:last-child]:mb-0">
+                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      msg.text
+                    )}
                   </div>
 
                   {msg.chunks && msg.chunks.length > 0 && (
