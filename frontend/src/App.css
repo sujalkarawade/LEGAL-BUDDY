@@ -1,0 +1,39 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  color: #e5e5e5;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.page-content {
+  padding: 2rem;
+  flex: 1;
+}
+
+.app-footer {
+  width: 100%;
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(26, 26, 26, 0.9);
+  backdrop-filter: blur(sm);
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Selection styles */
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: white;
+}

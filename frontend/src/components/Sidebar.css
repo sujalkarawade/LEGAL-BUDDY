@@ -1,0 +1,143 @@
+.sidebar {
+  width: 16rem;
+  flex-shrink: 0;
+  background-color: #1a1a1a;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  background: linear-gradient(to right, #3b82f6, #a855f7);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-logo {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(to bottom right, #3b82f6, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.nav-label {
+  font-size: 0.625rem;
+  font-weight: bold;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  margin-left: 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.nav-item-active {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  box-shadow: 0 1px 2px 0 rgba(59, 130, 246, 0.05);
+}
+
+.nav-item-inactive {
+  color: #9ca3af;
+}
+
+.nav-item-inactive:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #e5e5e5;
+}
+
+.nav-text {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.sidebar-status {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(10, 10, 10, 0.4);
+}
+
+.status-label {
+  font-size: 0.625rem;
+  font-weight: bold;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 0.5rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.status-success {
+  color: #4ade80;
+}
+
+.status-warning {
+  color: #facc15;
+}
+
+.status-info {
+  color: #60a5fa;
+}
+
+.status-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #d1d5db;
+}
+
+.status-value {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
