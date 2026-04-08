@@ -32,9 +32,6 @@ export default function Sidebar({ status, embedded, embedBackend }: SidebarProps
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="sidebar-title">
-          <div className="sidebar-logo">
-            <List size={18} />
-          </div>
           Legal Buddy
         </h1>
       </div>

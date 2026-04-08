@@ -24,10 +24,27 @@ export default function QAPage({ embedded }: QAPageProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom when user sends (loading starts)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+    if (loading && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [loading]);
+
+  // Scroll to the START of the latest assistant message when it arrives
+  useEffect(() => {
+    if (!loading && messages.length > 0 && messages[messages.length - 1].role !== 'user') {
+      // Small delay to let the DOM render the new message
+      setTimeout(() => {
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
   }, [messages, loading]);
 
   if (!embedded) {
@@ -53,10 +70,10 @@ export default function QAPage({ embedded }: QAPageProps) {
 
     try {
       const data = await askQuestion(userMessage.text);
-      const aiMessage: Message = { 
-        role: "assistant", 
+      const aiMessage: Message = {
+        role: "assistant",
         text: data.answer,
-        chunks: data.chunks || [] 
+        chunks: data.chunks || []
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err: any) {
@@ -74,7 +91,7 @@ export default function QAPage({ embedded }: QAPageProps) {
       </div>
 
       <div className="chat-container">
-        <div className="chat-messages">
+        <div className="chat-messages" ref={chatContainerRef}>
           {messages.length === 0 && (
             <div className="empty-chat">
               <Bot size={48} className="empty-chat-icon" />
@@ -87,18 +104,19 @@ export default function QAPage({ embedded }: QAPageProps) {
             {messages.map((msg, i) => (
               <motion.div
                 key={i}
+                ref={i === messages.length - 1 ? lastMessageRef : undefined}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`message ${msg.role === "user" ? "message-user" : "message-assistant"}`}
               >
-                <div className={`avatar ${msg.role === "user" ? "avatar-user" : 
+                <div className={`avatar ${msg.role === "user" ? "avatar-user" :
                   msg.role === "system" ? "avatar-system" : "avatar-assistant"}`}
                 >
                   {msg.role === "user" ? <User size={20} /> : <Bot size={20} />}
                 </div>
 
                 <div className={`message-content ${msg.role === "user" ? "message-content-user" : "message-content-assistant"}`}>
-                  <div className={`message-bubble ${msg.role === "user" ? "bubble-user" : 
+                  <div className={`message-bubble ${msg.role === "user" ? "bubble-user" :
                     msg.role === "system" ? "bubble-system" : "bubble-assistant"}`}
                   >
                     {msg.role === "assistant" ? (
@@ -130,7 +148,7 @@ export default function QAPage({ embedded }: QAPageProps) {
                 </div>
               </motion.div>
             ))}
-            
+
             {loading && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="message message-assistant">
                 <div className="avatar avatar-assistant">
@@ -146,7 +164,7 @@ export default function QAPage({ embedded }: QAPageProps) {
               </motion.div>
             )}
           </AnimatePresence>
-          <div ref={bottomRef} />
+
         </div>
 
         <div className="input-container">
