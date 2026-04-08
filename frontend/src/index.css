@@ -2,26 +2,27 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-dark-900: #000000;
-  --color-dark-800: #0a0a0a;
-  --color-dark-700: #141414;
-  --color-dark-600: #1c1c1c;
+  --color-dark-950: #0a0a0c;
+  --color-dark-900: #121214;
+  --color-dark-800: #1c1c1f;
+  --color-dark-700: #2a2a2e;
+  --color-dark-600: #38383d;
   --color-accent-blue: #3b82f6;
   --color-accent-purple: #8b5cf6;
 }
 
 @layer base {
   body {
-    @apply bg-dark-900 text-gray-100 font-sans antialiased selection:bg-accent-blue/30 selection:text-white min-h-screen overflow-x-hidden;
+    @apply bg-dark-900 text-gray-200 font-sans antialiased selection:bg-accent-blue/30 selection:text-white min-h-screen overflow-x-hidden;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-dark-800 border border-white/[0.06];
+    @apply bg-dark-800 border border-white/[0.08] shadow-xl;
   }
   .card-hover {
-    @apply transition-all duration-300 hover:bg-dark-700 hover:border-white/10 hover:shadow-lg hover:shadow-black/40;
+    @apply transition-all duration-300 hover:bg-dark-700 hover:border-white/12 hover:shadow-lg hover:shadow-black/20;
   }
 }
 
@@ -31,11 +32,11 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #000;
+  @apply bg-dark-950;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-dark-600 rounded-full;
+  @apply bg-dark-700 rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-700;
+  @apply bg-dark-600;
 }

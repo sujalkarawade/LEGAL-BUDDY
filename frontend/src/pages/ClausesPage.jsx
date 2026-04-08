@@ -124,14 +124,14 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
               <h2 className="text-lg font-semibold mb-4">Co-occurrence Analysis</h2>
               <div className="overflow-x-auto rounded-xl border border-white/5">
                 <table className="w-full text-left text-sm text-gray-300">
-                  <thead className="bg-white/[0.03] text-gray-500">
+                  <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] tracking-wider font-bold">
                     <tr>
                       <th className="px-4 py-3 font-medium">Clause A</th>
                       <th className="px-4 py-3 font-medium">Clause B</th>
                       <th className="px-4 py-3 font-medium w-24 text-center">Count</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04] bg-black/20">
+                  <tbody className="divide-y divide-white/[0.04] bg-dark-950/20">
                     {analysis.co_occurrence.sort((a, b) => b.count - a.count).map((row, i) => (
                       <tr key={i} className="hover:bg-white/5 transition-colors">
                         <td className="px-4 py-3">{row.a}</td>

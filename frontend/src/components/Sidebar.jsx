@@ -11,8 +11,8 @@ export default function Sidebar({ status, embedded, embedBackend }) {
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-dark-800 border-r border-white/[0.06] flex flex-col h-full">
-      <div className="p-6 border-b border-white/[0.06]">
+    <aside className="w-64 flex-shrink-0 bg-dark-900 border-r border-white/[0.08] flex flex-col h-full shadow-2xl">
+      <div className="p-6 border-b border-white/[0.08]">
         <h1 className="text-xl font-bold bg-gradient-to-r from-accent-blue to-accent-purple bg-clip-text text-transparent flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white">
             <List size={18} />
@@ -21,17 +21,17 @@ export default function Sidebar({ status, embedded, embedBackend }) {
         </h1>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 ml-2">Navigation</p>
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 ml-2">Navigation</p>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? "bg-accent-blue/10 text-accent-blue"
-                  : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                  ? "bg-accent-blue/10 text-accent-blue shadow-sm shadow-accent-blue/5"
+                  : "text-gray-400 hover:bg-white/[0.03] hover:text-gray-200"
               }`
             }
           >
@@ -41,9 +41,9 @@ export default function Sidebar({ status, embedded, embedBackend }) {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-white/[0.06] bg-black/40">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Status</p>
-        <div className="space-y-3">
+      <div className="p-4 border-t border-white/[0.08] bg-dark-950/40">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">System Status</p>
+        <div className="space-y-4 px-2">
           {/* Vector DB Status */}
           <div className="flex items-center gap-3 px-2">
             {embedded ? (

@@ -87,7 +87,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-black text-gray-100 selection:bg-accent-blue/30 selection:text-white relative">
+    <div className="flex h-screen overflow-hidden bg-dark-950 text-gray-200 selection:bg-accent-blue/30 selection:text-white relative">
       <Sidebar status={status} embedded={embedded} embedBackend={embedBackend} />
       
       <main className="flex-1 overflow-y-auto flex flex-col relative">
@@ -142,7 +142,7 @@ export default function App() {
           </Routes>
         </div>
 
-        <footer className="w-full mt-auto p-4 border-t border-white/[0.06] bg-black/90 backdrop-blur-sm text-center text-xs text-gray-600">
+        <footer className="w-full mt-auto p-4 border-t border-white/[0.08] bg-dark-900/90 backdrop-blur-sm text-center text-xs text-gray-500">
           Disclaimer: This tool provides AI-assisted insights and is not a substitute for professional legal advice.
         </footer>
       </main>
