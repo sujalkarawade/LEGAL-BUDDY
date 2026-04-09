@@ -50,16 +50,26 @@ h1 { font-size: 1.6rem; margin-bottom: 0.4rem; }
 .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
 button {
-  background: #2563eb;
-  color: #fff;
+  background: linear-gradient(135deg, #c9973a 0%, #e8b84b 100%);
+  color: #000;
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1.1rem;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.15s;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 16px rgba(201, 151, 58, 0.3);
 }
-button:hover:not(:disabled) { background: #1d4ed8; }
+button:hover:not(:disabled) { 
+  background: linear-gradient(135deg, #b8852e 0%, #d4a43c 100%);
+  box-shadow: 0 8px 32px rgba(201, 151, 58, 0.55), 0 0 16px rgba(201, 151, 58, 0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(201, 151, 58, 0.3);
+}
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .upload-label {
@@ -70,8 +80,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .upload-label input[type="file"] { display: none; }
 .upload-label span {
-  background: #2563eb;
-  color: #fff;
+  background: #c9973a;
+  color: #000;
   border-radius: 8px;
   padding: 0.5rem 1.1rem;
   font-size: 0.9rem;
