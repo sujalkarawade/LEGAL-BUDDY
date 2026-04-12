@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { List, Loader2, Target, AlertTriangle, UserCheck, ScanSearch } from "lucide-react";
+import { useState, useMemo } from "react";
+import { List, Loader2, Target, AlertTriangle, UserCheck, ScanSearch,
+         ShieldAlert, ShieldCheck, ShieldQuestion, Zap, Search, X } from "lucide-react";
 import "./ClausesPage.css";
 
 interface ClauseRisks { [key: string]: string; }
@@ -22,7 +24,63 @@ interface ClausesPageProps {
   error: string;
 }
 
+const RISK_META: Record<string, { label: string; icon: React.ReactNode; weight: number }> = {
+  high:    { label: "High",    icon: <ShieldAlert size={13} />,   weight: 0 },
+  medium:  { label: "Medium",  icon: <AlertTriangle size={13} />, weight: 50 },
+  low:     { label: "Low",     icon: <ShieldCheck size={13} />,   weight: 100 },
+  unknown: { label: "Unknown", icon: <ShieldQuestion size={13} />, weight: 50 },
+};
+
+const FILTER_OPTIONS = ["all", "high", "medium", "low", "unknown"] as const;
+type FilterOption = typeof FILTER_OPTIONS[number];
+
+function getRiskKey(risk: string | undefined) {
+  const k = risk?.toLowerCase() ?? "unknown";
+  return RISK_META[k] ? k : "unknown";
+}
+
+/** 0–100 score: 100 = all low, 0 = all high */
+function calcRiskScore(clauses: string[], risks: ClauseRisks): number {
+  if (!clauses.length) return 0;
+  const sum = clauses.reduce((acc, c) => acc + RISK_META[getRiskKey(risks[c])].weight, 0);
+  return Math.round(sum / clauses.length);
+}
+
+/** SVG circle gauge */
+function RiskGauge({ score }: { score: number }) {
+  const r = 44;
+  const circ = 2 * Math.PI * r;
+  const dash = (score / 100) * circ;
+  const color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+  const label = score >= 70 ? "Low Risk" : score >= 40 ? "Moderate" : "High Risk";
+
+  return (
+    <div className="gauge-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        {/* track */}
+        <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+        {/* progress */}
+        <circle
+          cx="55" cy="55" r={r} fill="none"
+          stroke={color} strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${circ}`}
+          strokeDashoffset={circ * 0.25}   /* start from top */
+          style={{ transition: "stroke-dasharray 1s ease" }}
+        />
+      </svg>
+      <div className="gauge-center">
+        <span className="gauge-score" style={{ color }}>{score}</span>
+        <span className="gauge-label" style={{ color }}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function ClausesPage({ analysis, handleAnalyze, loading, embedded, error }: ClausesPageProps) {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterOption>("all");
+
   if (!embedded) {
     return (
       <div className="no-document-state">
@@ -33,16 +91,31 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
     );
   }
 
-  const getRiskColor = (risk: string | undefined): string => {
-    switch (risk?.toLowerCase()) {
-      case "high":    return "risk-high";
-      case "medium":  return "risk-medium";
-      case "low":     return "risk-low";
-      default:        return "risk-unknown";
-    }
-  };
-
   const hasAnalysis = !!analysis;
+
+  const riskCounts = useMemo(() => hasAnalysis
+    ? analysis!.detected_clauses.reduce((acc, c) => {
+        const k = getRiskKey(analysis!.clause_risks[c]);
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    : {}, [analysis]);
+
+  const total = hasAnalysis ? analysis!.detected_clauses.length : 0;
+  const riskScore = hasAnalysis ? calcRiskScore(analysis!.detected_clauses, analysis!.clause_risks) : 0;
+
+  const filteredClauses = useMemo(() => {
+    if (!hasAnalysis) return [];
+    return analysis!.detected_clauses.filter(c => {
+      const matchesFilter = filter === "all" || getRiskKey(analysis!.clause_risks[c]) === filter;
+      const matchesSearch = c.replace(/_/g, " ").toLowerCase().includes(search.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [analysis, filter, search]);
+
+  const missingItems = hasAnalysis && analysis!.advice_missing
+    ? analysis!.advice_missing.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+    : [];
 
   return (
     <motion.div
@@ -53,7 +126,6 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
     >
       <AnimatePresence mode="wait">
         {!hasAnalysis && !loading ? (
-          /* ── Hero empty state ── */
           <motion.div
             key="hero"
             initial={{ opacity: 0, scale: 0.97 }}
@@ -63,51 +135,31 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
             className="clauses-hero"
           >
             <div className="hero-dots">
-              {Array.from({ length: 16 }).map((_, i) => (
-                <div key={i} className="hero-dot" />
-              ))}
+              {Array.from({ length: 16 }).map((_, i) => <div key={i} className="hero-dot" />)}
             </div>
-
             <div className="hero-icon-ring">
-              <div className="hero-icon-inner">
-                <ScanSearch size={26} />
-              </div>
+              <div className="hero-icon-inner"><ScanSearch size={26} /></div>
             </div>
-
-            <div className="hero-badge">
-              <span className="hero-badge-dot" />
-              Risk Detection
-            </div>
-
+            <div className="hero-badge"><span className="hero-badge-dot" />Risk Detection</div>
             <h1 className="clauses-title">Clause Analysis</h1>
             <p className="clauses-hero-description">
               Detect clauses, assess risk levels, identify missing provisions, and get lawyer recommendations.
             </p>
-
             <button onClick={handleAnalyze} disabled={loading} className="analyze-button disabled:opacity-50">
-              <Target size={16} />
-              Run Analysis
+              <Target size={16} /> Run Analysis
             </button>
           </motion.div>
+
         ) : loading ? (
-          /* ── Loading state ── */
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="clauses-hero"
-          >
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="clauses-hero">
             <div className="hero-icon-ring">
-              <div className="hero-icon-inner">
-                <Loader2 size={26} className="animate-spin" />
-              </div>
+              <div className="hero-icon-inner"><Loader2 size={26} className="animate-spin" /></div>
             </div>
             <h1 className="clauses-title">Running Analysis</h1>
             <p className="clauses-hero-description">Scanning clauses, assessing risks, and building insights…</p>
           </motion.div>
+
         ) : (
-          /* ── Content state ── */
           <motion.div
             key="content"
             initial={{ opacity: 0, y: 16 }}
@@ -116,104 +168,160 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
             transition={{ duration: 0.4 }}
             style={{ width: "100%" }}
           >
+            {/* Header */}
             <div className="clauses-header">
               <div>
                 <h1 className="clauses-title">Clause Analysis</h1>
                 <p className="clauses-description">Deep insights into document clauses, risk factors, and legal advice.</p>
               </div>
               <button onClick={handleAnalyze} disabled={loading} className="analyze-button disabled:opacity-50">
-                <Target size={14} />
-                Re-analyze
+                <Target size={14} /> Re-analyze
               </button>
             </div>
 
             {error && <div className="error-message">{error}</div>}
 
-            <div className="analysis-content">
-              {/* Detected Clauses */}
-              <section className="detected-clauses">
-                <h2 className="section-title">
-                  <List size={18} className="section-icon" /> Detected Clauses
-                </h2>
-                <div className="clause-tags">
-                  {analysis!.detected_clauses.map((c) => (
-                    <div key={c} className={`clause-tag ${getRiskColor(analysis!.clause_risks[c])}`}>
-                      {c} <span className="risk-level">({analysis!.clause_risks[c] || "unknown"})</span>
-                    </div>
-                  ))}
+            {/* ── Top row: Risk Summary Bar + Gauge ── */}
+            <div className="top-row">
+              <div className="risk-summary-bar">
+                <div className="risk-summary-total">
+                  <span className="risk-total-number">{total}</span>
+                  <span className="risk-total-label">Clauses</span>
                 </div>
+                <div className="risk-summary-divider" />
+                {(["high","medium","low","unknown"] as const).map(k => (
+                  <div
+                    key={k}
+                    className={`risk-summary-item risk-summary-${k} ${filter === k ? "risk-summary-item--active" : ""}`}
+                    onClick={() => setFilter(f => f === k ? "all" : k)}
+                    title={`Filter by ${k} risk`}
+                  >
+                    {RISK_META[k].icon}
+                    <span className="risk-summary-count">{riskCounts[k] || 0}</span>
+                    <span className="risk-summary-label">{RISK_META[k].label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Risk Score Gauge */}
+              <div className="gauge-card">
+                <RiskGauge score={riskScore} />
+                <p className="gauge-title">Risk Score</p>
+              </div>
+            </div>
+
+            <div className="analysis-content">
+
+              {/* ── Clause Cards with search + filter ── */}
+              <section className="detected-clauses">
+                <div className="clauses-toolbar">
+                  <h2 className="section-title" style={{ margin: 0 }}>
+                    <List size={18} className="section-icon" /> Detected Clauses
+                  </h2>
+                  <div className="clause-search-wrap">
+                    <Search size={13} className="clause-search-icon" />
+                    <input
+                      type="text"
+                      className="clause-search"
+                      placeholder="Search clauses…"
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                    {search && (
+                      <button className="clause-search-clear" onClick={() => setSearch("")}>
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                  {filter !== "all" && (
+                    <button className="filter-clear-btn" onClick={() => setFilter("all")}>
+                      <X size={11} /> Clear filter
+                    </button>
+                  )}
+                </div>
+
+                {filteredClauses.length === 0 ? (
+                  <p className="advice-empty" style={{ marginTop: "0.75rem" }}>No clauses match your search.</p>
+                ) : (
+                  <div className="clause-cards">
+                    {filteredClauses.map((c, i) => {
+                      const rk = getRiskKey(analysis!.clause_risks[c]);
+                      const meta = RISK_META[rk];
+                      return (
+                        <motion.div
+                          key={c}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className={`clause-card clause-card--${rk}`}
+                        >
+                          <div className="clause-card-icon">{meta.icon}</div>
+                          <div className="clause-card-body">
+                            <span className="clause-card-name">{c.replace(/_/g, " ")}</span>
+                            <span className={`clause-card-risk clause-card-risk--${rk}`}>{meta.label} Risk</span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
               </section>
 
               <div className="analysis-grid">
+                {/* ── Missing Clauses ── */}
                 <section className="advice-section">
-                  <div>
-                    <h2 className="section-title">
-                      <AlertTriangle size={18} className="section-icon-warning" /> Missing Clauses
-                    </h2>
-                    <div className="advice-content">
-                      {analysis!.advice_missing || "No missing clauses detected."}
-                    </div>
+                  <h2 className="section-title">
+                    <AlertTriangle size={18} className="section-icon-warning" /> Missing Clauses
+                  </h2>
+                  <div className="missing-pills">
+                    {missingItems.length > 0
+                      ? missingItems.map((item, i) => (
+                          <div key={i} className="missing-pill">
+                            <Zap size={11} className="missing-pill-icon" />
+                            {item}
+                          </div>
+                        ))
+                      : <p className="advice-empty">No missing clauses detected.</p>
+                    }
                   </div>
-                  {analysis!.advice_unusual && (
-                    <div>
-                      <h2 className="section-title">
-                        <AlertTriangle size={18} className="section-icon-danger" /> Unusual Phrases
-                      </h2>
-                      <div className="unusual-content">{analysis!.advice_unusual}</div>
-                    </div>
-                  )}
                 </section>
 
-                {analysis!.top_lawyers && analysis!.top_lawyers.length > 0 && (
-                  <section className="lawyers-section">
-                    <h2 className="section-title">
-                      <UserCheck size={18} className="section-icon-purple" /> Recommended Lawyers
-                    </h2>
-                    <div className="lawyers-list">
-                      {analysis!.top_lawyers.map((l, i) => (
-                        <div key={i} className="lawyer-card">
-                          <div>
-                            <p className="lawyer-name">{l.name}</p>
-                            <p className="lawyer-specialization">{l.specialization}</p>
-                          </div>
-                          <div className="lawyer-experience">
-                            <p className="experience-years">{l.experience} yrs</p>
-                            <p className="experience-label">experience</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
+                {/* ── Unusual Phrases ── */}
+                <section className="advice-section">
+                  <h2 className="section-title">
+                    <AlertTriangle size={18} className="section-icon-danger" /> Unusual Phrases
+                  </h2>
+                  {analysis!.advice_unusual
+                    ? <div className="unusual-content">{analysis!.advice_unusual}</div>
+                    : <p className="advice-empty">No unusual phrases detected.</p>
+                  }
+                </section>
               </div>
 
-              {analysis!.co_occurrence && analysis!.co_occurrence.length > 0 && (
-                <section className="co-occurrence-section">
-                  <h2 className="section-title">Co-occurrence Analysis</h2>
-                  <div className="table-container">
-                    <table className="co-occurrence-table">
-                      <thead>
-                        <tr>
-                          <th className="table-header">Clause A</th>
-                          <th className="table-header">Clause B</th>
-                          <th className="table-header table-header-center">Count</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analysis!.co_occurrence.sort((a, b) => b.count - a.count).map((row, i) => (
-                          <tr key={i} className="table-row">
-                            <td className="table-cell">{row.a}</td>
-                            <td className="table-cell">{row.b}</td>
-                            <td className="table-cell table-cell-center">
-                              <span className="count-badge">{row.count}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              {/* ── Lawyers ── */}
+              {analysis!.top_lawyers && analysis!.top_lawyers.length > 0 && (
+                <section className="lawyers-section">
+                  <h2 className="section-title">
+                    <UserCheck size={18} className="section-icon-purple" /> Recommended Lawyers
+                  </h2>
+                  <div className="lawyers-list">
+                    {analysis!.top_lawyers.map((l, i) => (
+                      <div key={i} className="lawyer-card">
+                        <div className="lawyer-rank">#{i + 1}</div>
+                        <div className="lawyer-info">
+                          <p className="lawyer-name">{l.name}</p>
+                          <p className="lawyer-specialization">{l.specialization}</p>
+                        </div>
+                        <div className="lawyer-experience">
+                          <p className="experience-years">{l.experience}</p>
+                          <p className="experience-label">yrs exp</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </section>
               )}
+
             </div>
           </motion.div>
         )}
