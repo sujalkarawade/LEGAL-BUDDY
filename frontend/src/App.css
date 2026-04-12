@@ -40,6 +40,25 @@
   flex-direction: column;
   position: relative;
   z-index: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 151, 58, 0.35) transparent;
+}
+
+.main-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(201, 151, 58, 0.5) 0%, rgba(201, 151, 58, 0.2) 100%);
+  border-radius: 99px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(201, 151, 58, 0.75) 0%, rgba(201, 151, 58, 0.4) 100%);
 }
 
 .page-content {

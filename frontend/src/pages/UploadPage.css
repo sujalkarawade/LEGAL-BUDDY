@@ -1,5 +1,5 @@
 .upload-page {
-  max-width: 44rem;
+  max-width: 56rem;
   margin: 0 auto;
   margin-top: 9.5rem;
 }
@@ -11,7 +11,7 @@
 }
 
 .upload-title {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #ebebeb;
   letter-spacing: -0.03em;
@@ -24,14 +24,14 @@
 
 .upload-description {
   color: #3d3d3d;
-  font-size: 0.875rem;
+  font-size: 1rem;
   letter-spacing: 0.01em;
 }
 
 /* ── Drop Zone ── */
 .upload-area {
   border-radius: 1rem;
-  padding: 3.5rem 2rem;
+  padding: 5rem 2rem;
   position: relative;
   overflow: hidden;
   text-align: center;
@@ -87,13 +87,13 @@
 }
 
 .upload-text {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #d0d0d0;
 }
 
 .upload-subtext {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #2e2e2e;
   margin-top: 0.25rem;
 }

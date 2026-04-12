@@ -1,5 +1,5 @@
 .sidebar {
-  width: 15.5rem;
+  width: 15rem;
   flex-shrink: 0;
   background: linear-gradient(180deg, #0a0a0a 0%, #060606 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
@@ -8,6 +8,7 @@
   height: 100%;
   position: relative;
   z-index: 10;
+  
 }
 
 /* Gold accent line on right edge */
@@ -24,7 +25,7 @@
 
 /* ── Header ── */
 .sidebar-header {
-  padding: 1.2rem 1rem;
+  padding: 1px 0 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -58,7 +59,7 @@
   padding: 1.25rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.6rem;
   overflow-y: auto;
 }
 
@@ -120,7 +121,7 @@
 
 /* ── Status ── */
 .sidebar-status {
-  padding: 1rem 0.75rem 1.25rem;
+  padding: 1rem 0.75rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   background: rgba(0, 0, 0, 0.4);
 }
@@ -150,7 +151,7 @@
 .status-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8rem;
   padding: 0 0.25rem;
 }
 
@@ -201,7 +202,7 @@
 }
 
 .status-name {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #e8e8e8;
   line-height: 1.3;
