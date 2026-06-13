@@ -1,0 +1,85 @@
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 0.625rem 0.25rem;
+  margin-top: 0.8rem;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.theme-toggle-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+  display: block;
+}
+
+.theme-toggle-btn:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.toggle-track {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  border-radius: 99px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Theme specific tracks */
+.theme-toggle-btn.dark .toggle-track {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: flex-start;
+}
+
+.theme-toggle-btn.light .toggle-track {
+  background: #cbd5e1;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  justify-content: flex-end;
+}
+
+/* Knob styling */
+.toggle-knob {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-btn.dark .toggle-knob {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+}
+
+.theme-toggle-btn.light .toggle-knob {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #fff;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+.theme-icon {
+  display: block;
+}

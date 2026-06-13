@@ -62,6 +62,20 @@ export default function App() {
 
   const navigate = useNavigate();
 
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("theme");
+    return (saved as "dark" | "light") || "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   useEffect(() => {
     getStatus().then(setStatus).catch(() => {});
   }, []);
@@ -128,7 +142,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Sidebar status={status} embedded={embedded} embedBackend={embedBackend} />
+      <Sidebar status={status} embedded={embedded} embedBackend={embedBackend} theme={theme} toggleTheme={toggleTheme} />
       
       <main className="main-content">
         <div className="page-content">

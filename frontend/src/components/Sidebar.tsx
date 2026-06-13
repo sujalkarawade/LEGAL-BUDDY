@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { UploadCloud, FileText, List, MessageSquare, Database, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
 import "./Sidebar.css";
 
 interface Status {
@@ -12,6 +13,8 @@ interface SidebarProps {
   status: Status;
   embedded: boolean;
   embedBackend: string;
+  theme: "dark" | "light";
+  toggleTheme: () => void;
 }
 
 interface NavItem {
@@ -20,7 +23,7 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number }>;
 }
 
-export default function Sidebar({ status, embedded, embedBackend }: SidebarProps) {
+export default function Sidebar({ status, embedded, embedBackend, theme, toggleTheme }: SidebarProps) {
   const navItems: NavItem[] = [
     { name: "Upload Document", path: "/upload", icon: UploadCloud },
     { name: "Summary", path: "/summary", icon: FileText },
@@ -94,6 +97,9 @@ export default function Sidebar({ status, embedded, embedBackend }: SidebarProps
             </div>
           </div>
         </div>
+
+        {/* Theme Toggle below System Status list */}
+        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
       </div>
     </aside>
   );

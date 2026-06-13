@@ -2,8 +2,8 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: #000000;
-  color: #c8cfe8;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
   position: relative;
 }
 
@@ -15,7 +15,7 @@
   left: -8%;
   width: 45%;
   height: 55%;
-  background: radial-gradient(ellipse, rgba(160, 174, 192, 0.03) 0%, transparent 65%);
+  background: var(--ambient-glow-1);
   pointer-events: none;
   z-index: 0;
 }
@@ -28,7 +28,7 @@
   right: -10%;
   width: 42%;
   height: 50%;
-  background: radial-gradient(ellipse, rgba(201, 151, 58, 0.04) 0%, transparent 65%);
+  background: var(--ambient-glow-2);
   pointer-events: none;
   z-index: 0;
 }
@@ -41,7 +41,7 @@
   position: relative;
   z-index: 1;
   scrollbar-width: thin;
-  scrollbar-color: rgba(201, 151, 58, 0.35) transparent;
+  scrollbar-color: var(--scroll-thumb) transparent;
 }
 
 .main-content::-webkit-scrollbar {
@@ -53,12 +53,12 @@
 }
 
 .main-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(201, 151, 58, 0.5) 0%, rgba(201, 151, 58, 0.2) 100%);
+  background: linear-gradient(180deg, var(--scroll-thumb) 0%, rgba(201, 151, 58, 0.2) 100%);
   border-radius: 99px;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(201, 151, 58, 0.75) 0%, rgba(201, 151, 58, 0.4) 100%);
+  background: linear-gradient(180deg, var(--scroll-thumb-hover) 0%, rgba(201, 151, 58, 0.4) 100%);
 }
 
 .page-content {
@@ -70,12 +70,12 @@
   width: 100%;
   margin-top: auto;
   padding: 0.75rem 2.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(0, 0, 0, 0.9);
+  border-top: 1px solid var(--border-secondary);
+  background: var(--footer-bg);
   backdrop-filter: blur(16px);
   text-align: center;
   font-size: 0.675rem;
-  color: #333333;
+  color: var(--footer-text);
   letter-spacing: 0.04em;
   font-weight: 500;
   text-transform: uppercase;
