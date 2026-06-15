@@ -252,9 +252,9 @@
 .summary-header-text .summary-title {
   font-size: 1.75rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
   margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-muted) 100%);
+  background: linear-gradient(135deg,var(--text-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -380,7 +380,8 @@
 
 .summary-text strong {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 
 .summary-text ul {

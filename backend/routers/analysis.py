@@ -1,5 +1,6 @@
 import itertools
 import json
+import re
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException
@@ -79,15 +80,12 @@ def mitigate_clause(req: MitigateRequest):
 
     try:
         raw_output = invoke_with_groq_fallback(factory)
-        raw_output = raw_output.strip()
-        if raw_output.startswith("```json"):
-            raw_output = raw_output[7:]
-        elif raw_output.startswith("```"):
-            raw_output = raw_output[3:]
-        if raw_output.endswith("```"):
-            raw_output = raw_output[:-3]
         
-        parsed = json.loads(raw_output.strip())
+        match = re.search(r'\{.*\}', raw_output, re.DOTALL)
+        if not match:
+            raise ValueError("No JSON object found in the model's response.")
+        
+        parsed = json.loads(match.group(0))
         return parsed
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to mitigate clause: {str(e)}")

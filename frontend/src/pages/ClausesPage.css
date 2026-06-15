@@ -85,8 +85,8 @@
 @keyframes dot-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 .clauses-title {
-  font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.625rem;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-muted) 100%);
+  font-size: 2rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.625rem;
+  background: linear-gradient(135deg, var(--text-primary));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .clauses-hero-description {
