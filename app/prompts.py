@@ -25,3 +25,18 @@ Explain each legal clause in simple terms and highlight any risks mentioned in t
 """
 )
 
+MITIGATE_PROMPT = ChatPromptTemplate.from_template(
+    """
+You are an expert legal drafter and risk analyst.
+Analyze the following document excerpt to find the text related to the {clause_type} clause.
+Provide your response in JSON format with exactly these three keys:
+- "original_text": The exact excerpted text of the clause as found in the context.
+- "explanation": A brief explanation of the risks associated with this clause as written.
+- "mitigated_text": A newly drafted, safer version of this clause that mitigates the risk and is fair to both parties.
+
+<context>
+{context}
+</context>
+"""
+)
+

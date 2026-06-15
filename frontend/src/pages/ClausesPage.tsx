@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
 import { List, Loader2, Target, AlertTriangle, UserCheck, ScanSearch,
-         ShieldAlert, ShieldCheck, ShieldQuestion, Zap, Search, X } from "lucide-react";
+         ShieldAlert, ShieldCheck, ShieldQuestion, Zap, Search, X, Copy, CheckCircle2 } from "lucide-react";
+import { mitigateClause, MitigateResponse } from "../api";
 import "./ClausesPage.css";
 
 interface ClauseRisks { [key: string]: string; }
@@ -80,6 +81,33 @@ function RiskGauge({ score }: { score: number }) {
 export default function ClausesPage({ analysis, handleAnalyze, loading, embedded, error }: ClausesPageProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterOption>("all");
+
+  const [mitigating, setMitigating] = useState<string | null>(null);
+  const [mitigationData, setMitigationData] = useState<MitigateResponse | null>(null);
+  const [mitigateError, setMitigateError] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  const handleMitigate = async (clause: string) => {
+    setMitigating(clause);
+    setMitigationData(null);
+    setMitigateError("");
+    try {
+      const data = await mitigateClause(clause);
+      setMitigationData(data);
+    } catch (e: any) {
+      setMitigateError(e.message);
+    } finally {
+      setMitigating(null);
+    }
+  };
+
+  const handleCopy = () => {
+    if (mitigationData?.mitigated_text) {
+      navigator.clipboard.writeText(mitigationData.mitigated_text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (!embedded) {
     return (
@@ -253,7 +281,8 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}
-                          className={`clause-card clause-card--${rk}`}
+                          className={`clause-card clause-card--${rk} clause-card--clickable`}
+                          onClick={() => handleMitigate(c)}
                         >
                           <div className="clause-card-icon">{meta.icon}</div>
                           <div className="clause-card-body">
@@ -323,6 +352,82 @@ export default function ClausesPage({ analysis, handleAnalyze, loading, embedded
               )}
 
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {(mitigating || mitigationData || mitigateError) && (
+          <motion.div
+            className="mitigation-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => {
+              if (!mitigating) {
+                setMitigationData(null);
+                setMitigateError("");
+              }
+            }}
+          >
+            <motion.div
+              className="mitigation-modal"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="mitigation-modal-header">
+                <h2>Clause Mitigation</h2>
+                <button className="mitigation-close" onClick={() => {
+                  setMitigationData(null);
+                  setMitigateError("");
+                  setMitigating(null);
+                }}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="mitigation-modal-body">
+                {mitigating ? (
+                  <div className="mitigation-loading">
+                    <Loader2 size={32} className="animate-spin" />
+                    <p>Analyzing {mitigating.replace(/_/g, " ")} and drafting mitigation...</p>
+                  </div>
+                ) : mitigateError ? (
+                  <div className="mitigation-error">
+                    <AlertTriangle size={32} />
+                    <p>{mitigateError}</p>
+                  </div>
+                ) : mitigationData ? (
+                  <div className="mitigation-columns">
+                    <div className="mitigation-col mitigation-col-original">
+                      <h3>Original Clause & Risk</h3>
+                      <div className="mitigation-box original-box">
+                        <p className="mitigation-text">{mitigationData.original_text}</p>
+                      </div>
+                      <div className="mitigation-risk">
+                        <h4><AlertTriangle size={14} /> Risk Analysis</h4>
+                        <p>{mitigationData.explanation}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mitigation-col mitigation-col-mitigated">
+                      <div className="mitigated-header">
+                        <h3>Safe Alternative</h3>
+                        <button className="copy-btn" onClick={handleCopy}>
+                          {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                          {copied ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                      <div className="mitigation-box mitigated-box">
+                        <p className="mitigation-text">{mitigationData.mitigated_text}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

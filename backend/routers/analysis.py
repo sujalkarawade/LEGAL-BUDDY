@@ -1,7 +1,9 @@
 import itertools
+import json
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 import backend.state as state
 from app.analysis import (
@@ -13,8 +15,13 @@ from app.analysis import (
 )
 from app.config import LAWYER_PATH
 from app.data import load_json_list, load_risk_data
+from app.llm import invoke_with_groq_fallback
+from app.prompts import MITIGATE_PROMPT
 
 router = APIRouter()
+
+class MitigateRequest(BaseModel):
+    clause: str
 
 
 @router.get("/clauses")
@@ -49,3 +56,38 @@ def clause_analysis():
         "advice_unusual": advice_unusual,
         "top_lawyers": top_lawyers,
     }
+
+
+@router.post("/mitigate")
+def mitigate_clause(req: MitigateRequest):
+    if not state.final_docs:
+        raise HTTPException(status_code=400, detail="Embed a document first.")
+
+    target_content = ""
+    for doc in state.final_docs:
+        if doc.metadata.get("source") == "PDF" and req.clause in doc.metadata.get("clauses", []):
+            target_content = doc.page_content
+            break
+
+    if not target_content:
+        raise HTTPException(status_code=404, detail="Clause text not found in the uploaded document.")
+
+    prompt_val = MITIGATE_PROMPT.format_messages(clause_type=req.clause, context=target_content)
+
+    def factory(llm):
+        return llm.invoke(prompt_val).content
+
+    try:
+        raw_output = invoke_with_groq_fallback(factory)
+        raw_output = raw_output.strip()
+        if raw_output.startswith("```json"):
+            raw_output = raw_output[7:]
+        elif raw_output.startswith("```"):
+            raw_output = raw_output[3:]
+        if raw_output.endswith("```"):
+            raw_output = raw_output[:-3]
+        
+        parsed = json.loads(raw_output.strip())
+        return parsed
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to mitigate clause: {str(e)}")

@@ -84,3 +84,19 @@ export async function getAnalysis(): Promise<AnalysisResponse> {
   if (!res.ok) throw new Error((await res.json()).detail);
   return res.json();
 }
+
+export interface MitigateResponse {
+  original_text: string;
+  explanation: string;
+  mitigated_text: string;
+}
+
+export async function mitigateClause(clause: string): Promise<MitigateResponse> {
+  const res = await fetch(`${BASE}/analysis/mitigate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ clause }),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail);
+  return res.json();
+}
