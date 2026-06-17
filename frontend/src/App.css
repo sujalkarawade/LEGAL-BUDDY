@@ -1,27 +1,7 @@
-/* ─── App Container — full-screen, no sidebar ────────────────── */
 .app-container {
   min-height: 100vh;
-  background: var(--bg-gradient);
-  color: var(--text-secondary);
-  position: relative;
+  background: #f7f7f5;
+  color: #0f0f0f;
 }
 
-::selection {
-  background-color: rgba(201, 151, 58, 0.2);
-  color: white;
-}
-
-/* ── Custom Scrollbar ────────────────────────────────────────── */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) transparent;
-}
-*::-webkit-scrollbar       { width: 5px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--scroll-thumb) 0%, rgba(201, 151, 58, 0.2) 100%);
-  border-radius: 99px;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--scroll-thumb-hover) 0%, rgba(201, 151, 58, 0.4) 100%);
-}
+::selection { background: rgba(201,151,58,0.18); color: #0f0f0f; }
