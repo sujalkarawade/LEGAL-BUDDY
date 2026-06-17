@@ -1,87 +1,27 @@
+/* ─── App Container — full-screen, no sidebar ────────────────── */
 .app-container {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-  background-color: var(--bg-primary);
+  min-height: 100vh;
+  background: var(--bg-gradient);
   color: var(--text-secondary);
   position: relative;
-}
-
-/* Ambient glow — top-left cool silver */
-.app-container::before {
-  content: '';
-  position: fixed;
-  top: -15%;
-  left: -8%;
-  width: 45%;
-  height: 55%;
-  background: var(--ambient-glow-1);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Ambient glow — bottom-right gold */
-.app-container::after {
-  content: '';
-  position: fixed;
-  bottom: -20%;
-  right: -10%;
-  width: 42%;
-  height: 50%;
-  background: var(--ambient-glow-2);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) transparent;
-}
-
-.main-content::-webkit-scrollbar {
-  width: 5px;
-}
-
-.main-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--scroll-thumb) 0%, rgba(201, 151, 58, 0.2) 100%);
-  border-radius: 99px;
-}
-
-.main-content::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--scroll-thumb-hover) 0%, rgba(201, 151, 58, 0.4) 100%);
-}
-
-.page-content {
-  padding: 1rem 2.5rem;
-  flex: 1;
-}
-
-.app-footer {
-  width: 100%;
-  margin-top: auto;
-  padding: 0.75rem 2.5rem;
-  border-top: 1px solid var(--border-secondary);
-  background: var(--footer-bg);
-  backdrop-filter: blur(16px);
-  text-align: center;
-  font-size: 0.675rem;
-  color: var(--footer-text);
-  letter-spacing: 0.04em;
-  font-weight: 500;
-  text-transform: uppercase;
 }
 
 ::selection {
   background-color: rgba(201, 151, 58, 0.2);
   color: white;
+}
+
+/* ── Custom Scrollbar ────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+*::-webkit-scrollbar       { width: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--scroll-thumb) 0%, rgba(201, 151, 58, 0.2) 100%);
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--scroll-thumb-hover) 0%, rgba(201, 151, 58, 0.4) 100%);
 }

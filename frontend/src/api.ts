@@ -100,3 +100,33 @@ export async function mitigateClause(clause: string): Promise<MitigateResponse> 
   if (!res.ok) throw new Error((await res.json()).detail);
   return res.json();
 }
+
+export interface GenerateDocumentPayload {
+  docType: string;
+  partyA: string;
+  partyB: string;
+  context: string;
+  jurisdiction: string;
+  tone: string;
+  specialClauses: string;
+  duration?: string;
+  scope?: string;
+  propertyAddress?: string;
+  rent?: string;
+  salary?: string;
+  startDate?: string;
+}
+
+export interface GenerateDocumentResponse {
+  document_text: string;
+}
+
+export async function generateDocument(payload: GenerateDocumentPayload): Promise<GenerateDocumentResponse> {
+  const res = await fetch(`${BASE}/generate/document`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Generation failed");
+  return res.json();
+}

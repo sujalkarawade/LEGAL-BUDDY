@@ -1,5 +1,4 @@
-import { motion } from "framer-motion";
-import { UploadCloud, FileText, List, MessageSquare, Database, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { UploadCloud, FileText, List, MessageSquare, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import "./Sidebar.css";
@@ -23,7 +22,7 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number }>;
 }
 
-export default function Sidebar({ status, embedded, embedBackend, theme, toggleTheme }: SidebarProps) {
+export default function Sidebar({ status, embedded, embedBackend: _embedBackend, theme, toggleTheme }: SidebarProps) {
   const navItems: NavItem[] = [
     { name: "Upload Document", path: "/upload", icon: UploadCloud },
     { name: "Summary", path: "/summary", icon: FileText },

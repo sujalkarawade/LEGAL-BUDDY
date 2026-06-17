@@ -101,7 +101,7 @@ body,
 }
 
 body {
-  font-family: system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg-gradient);
   color: var(--text-secondary);
   min-height: 100vh;

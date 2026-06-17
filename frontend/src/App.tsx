@@ -1,84 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { embedDocument, getAnalysis, getStatus, summarize, uploadDocument } from "./api";
-import Sidebar from "./components/Sidebar";
+import { embedDocument, getAnalysis, summarize, uploadDocument, AnalysisResponse } from "./api";
 import "./App.css";
 
+import Dashboard from "./pages/Dashboard";
 import UploadPage from "./pages/UploadPage";
 import SummaryPage from "./pages/SummaryPage";
 import ClausesPage from "./pages/ClausesPage";
 import QAPage from "./pages/QAPage";
-
-interface Status {
-  groq: boolean;
-  openrouter: boolean;
-}
-
-interface Analysis {
-  // Define analysis structure based on your API response
-  [key: string]: any;
-}
-
-interface UploadPageProps {
-  filename: string | null;
-  embedded: boolean;
-  loading: boolean;
-  error: string;
-  handleUpload: (file: File) => void;
-  handleEmbed: () => void;
-}
-
-interface SummaryPageProps {
-  summary: string;
-  loading: boolean;
-  embedded: boolean;
-  error: string;
-  handleSummarize: () => void;
-}
-
-interface ClausesPageProps {
-  analysis: Analysis | null;
-  loading: boolean;
-  embedded: boolean;
-  error: string;
-  handleAnalyze: () => void;
-}
-
-interface QAPageProps {
-  embedded: boolean;
-}
+import GenerateDocumentPage from "./pages/GenerateDocumentPage";
 
 export default function App() {
-  const [status, setStatus] = useState<Status>({ groq: false, openrouter: false });
-  const [filename, setFilename] = useState<string | null>(null);
-  const [embedded, setEmbedded] = useState<boolean>(false);
-  const [embedBackend, setEmbedBackend] = useState<string>("");
-  const [summary, setSummary] = useState<string>("");
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  
-  // App level loading state
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [filename, setFilename]   = useState<string | null>(null);
+  const [embedded, setEmbedded]   = useState<boolean>(false);
+  const [summary, setSummary]     = useState<string>("");
+  const [analysis, setAnalysis]   = useState<AnalysisResponse | null>(null);
+  const [loading, setLoading]     = useState<boolean>(false);
+  const [error, setError]         = useState<string>("");
 
   const navigate = useNavigate();
-
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    const saved = localStorage.getItem("theme");
-    return (saved as "dark" | "light") || "dark";
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
-  useEffect(() => {
-    getStatus().then(setStatus).catch(() => {});
-  }, []);
 
   async function handleUpload(file: File): Promise<void> {
     if (!file) return;
@@ -104,9 +44,8 @@ export default function App() {
     try {
       const data = await embedDocument(filename);
       setEmbedded(true);
-      setEmbedBackend(data.backend);
-      // Auto redirect to summary after embed
-      navigate('/summary');
+      void data;
+      navigate("/summary");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -142,64 +81,55 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Sidebar status={status} embedded={embedded} embedBackend={embedBackend} theme={theme} toggleTheme={toggleTheme} />
-      
-      <main className="main-content">
-        <div className="page-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/upload" replace />} />
-            
-            <Route 
-              path="/upload" 
-              element={
-                <UploadPage 
-                  filename={filename} 
-                  embedded={embedded}
-                  loading={loading}
-                  error={error}
-                  handleUpload={handleUpload}
-                  handleEmbed={handleEmbed}
-                />
-              } 
-            />
-            
-            <Route 
-              path="/summary" 
-              element={
-                <SummaryPage 
-                  summary={summary}
-                  loading={loading}
-                  embedded={embedded}
-                  error={error}
-                  handleSummarize={handleSummarize}
-                />
-              } 
-            />
-            
-            <Route 
-              path="/clauses" 
-              element={
-                <ClausesPage 
-                  analysis={analysis}
-                  loading={loading}
-                  embedded={embedded}
-                  error={error}
-                  handleAnalyze={handleAnalyze}
-                />
-              } 
-            />
-            
-            <Route 
-              path="/qa" 
-              element={<QAPage embedded={embedded} />} 
-            />
-          </Routes>
-        </div>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
 
-        <footer className="app-footer">
-          Disclaimer: This tool provides AI-assisted insights and is not a substitute for professional legal advice.
-        </footer>
-      </main>
+        <Route
+          path="/upload"
+          element={
+            <UploadPage
+              filename={filename}
+              embedded={embedded}
+              loading={loading}
+              error={error}
+              handleUpload={handleUpload}
+              handleEmbed={handleEmbed}
+            />
+          }
+        />
+
+        <Route
+          path="/summary"
+          element={
+            <SummaryPage
+              summary={summary}
+              loading={loading}
+              embedded={embedded}
+              error={error}
+              handleSummarize={handleSummarize}
+            />
+          }
+        />
+
+        <Route
+          path="/clauses"
+          element={
+            <ClausesPage
+              analysis={analysis}
+              loading={loading}
+              embedded={embedded}
+              error={error}
+              handleAnalyze={handleAnalyze}
+            />
+          }
+        />
+
+        <Route path="/qa" element={<QAPage embedded={embedded} />} />
+
+        <Route path="/generate" element={<GenerateDocumentPage />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
