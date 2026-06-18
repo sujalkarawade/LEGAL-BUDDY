@@ -180,64 +180,6 @@
   padding: 0 clamp(24px, 5vw, 80px);
 }
 
-/* ─── Navbar ───────────────────────────────────────────────── */
-.lb-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 0;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.lb-nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-hero);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--gold);
-}
-
-.lb-nav-links {
-  display: flex;
-  gap: 36px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.lb-nav-links span {
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.lb-nav-links span:hover {
-  color: var(--white);
-}
-
-.lb-nav-cta {
-  background: transparent;
-  border: 1px solid var(--gold-border);
-  color: var(--gold);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  padding: 9px 20px;
-  border-radius: 40px;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.2s, box-shadow 0.2s;
-}
-
-.lb-nav-cta:hover {
-  background: var(--gold-dim);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-}
-
 /* ─── Split Layout ─────────────────────────────────────────── */
 .lb-split {
   display: grid;
@@ -245,7 +187,7 @@
   gap: 30px;
   align-items: center;
   flex: 1;
-  padding: 40px 0 20px;
+  padding: 20px 0 20px;
   min-height: calc(100vh - 180px);
 }
 
@@ -412,65 +354,6 @@
   background: var(--glass);
 }
 
-/* ─── Floating Stat Cards ──────────────────────────────────── */
-.lb-float-cards {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.floating-card {
-  cursor: default;
-}
-
-.floating-card-inner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(15, 15, 15, 0.85);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
-  padding: 12px 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
-  transition: border-color 0.3s, box-shadow 0.3s;
-  min-width: 140px;
-}
-
-.floating-card-inner:hover {
-  border-color: var(--gold-border);
-  box-shadow: 0 8px 40px rgba(212, 175, 55, 0.12);
-}
-
-.floating-card-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--gold-dim);
-  border: 1px solid var(--gold-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-
-.floating-card-value {
-  font-family: var(--font-hero);
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-}
-
-.floating-card-label {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
-
 /* ─── Right Side ───────────────────────────────────────────── */
 .lb-right {
   display: flex;
@@ -484,11 +367,11 @@
 .cmd-panels {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 22px;
   width: 100%;
   max-width: 440px;
   height: 100%;
-  padding: 16px 0;
+  padding: 5px 0;
 }
 
 /* ─── Individual Command Panel ──────────────────────────────── */
@@ -512,46 +395,41 @@
 
 /* Upload panel — warm gold tint */
 .cmd-panel--upload {
+  flex: 1;
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(212, 175, 55, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
     linear-gradient(145deg, rgba(18, 14, 6, 0.97) 0%, rgba(10, 8, 3, 0.99) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .cmd-panel--upload:hover {
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.7),
-    0 0 60px rgba(212, 175, 55, 0.12),
-    0 0 0 1px rgba(212, 175, 55, 0.35),
-    inset 0 1px 0 rgba(212, 175, 55, 0.12);
+    0 20px 50px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(212, 175, 55, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.45),
+    inset 0 1px 0 rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.45);
 }
 
-/* Generate panel — cooler, slightly deeper */
+/* Generate panel — matching upload style */
 .cmd-panel--generate {
+  flex: 1;
   background:
-    radial-gradient(ellipse at 70% 80%, rgba(212, 175, 55, 0.07) 0%, transparent 60%),
-    linear-gradient(145deg, rgba(12, 10, 8, 0.98) 0%, rgba(8, 6, 4, 0.99) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.1);
+    radial-gradient(ellipse at 70% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+    linear-gradient(145deg, rgba(18, 14, 6, 0.97) 0%, rgba(10, 8, 3, 0.99) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .cmd-panel--generate:hover {
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.7),
-    0 0 50px rgba(212, 175, 55, 0.08),
-    0 0 0 1px rgba(212, 175, 55, 0.25),
-    inset 0 1px 0 rgba(212, 175, 55, 0.08);
-  border-color: rgba(212, 175, 55, 0.3);
+    0 20px 50px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(212, 175, 55, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.45),
+    inset 0 1px 0 rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
-/* ─── Animated SVG border ───────────────────────────────────── */
-.cmd-border-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
+
 
 /* ─── Cursor-reactive glow ──────────────────────────────────── */
 .cmd-cursor-glow {
@@ -559,7 +437,7 @@
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 0;
@@ -571,14 +449,12 @@
   inset: 0;
   width: 40%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.08) 40%,
-    rgba(212, 175, 55, 0.18) 50%,
-    rgba(212, 175, 55, 0.08) 60%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.08) 40%,
+      rgba(212, 175, 55, 0.18) 50%,
+      rgba(212, 175, 55, 0.08) 60%,
+      transparent 100%);
   pointer-events: none;
   z-index: 1;
   transform: skewX(-15deg);
@@ -596,30 +472,6 @@
   z-index: 2;
 }
 
-/* ─── Corner Accents ────────────────────────────────────────── */
-.cmd-corner {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.cmd-corner::before,
-.cmd-corner::after {
-  content: '';
-  position: absolute;
-  background: var(--gold);
-  opacity: 0.7;
-}
-
-.cmd-corner::before { width: 100%; height: 1.5px; top: 0; left: 0; }
-.cmd-corner::after  { width: 1.5px; height: 100%; top: 0; left: 0; }
-
-.cmd-corner--tl { top: 14px; left: 14px; }
-.cmd-corner--tr { top: 14px; right: 14px; transform: scaleX(-1); }
-.cmd-corner--bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
-.cmd-corner--br { bottom: 14px; right: 14px; transform: scale(-1); }
 
 /* ─── Panel Content ─────────────────────────────────────────── */
 .cmd-content {
@@ -634,38 +486,6 @@
   width: 100%;
 }
 
-/* Status indicator */
-.cmd-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  position: absolute;
-  top: 18px;
-  right: 22px;
-}
-
-.cmd-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.8); }
-}
-
-.cmd-status-text {
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: rgba(74, 222, 128, 0.8);
-  text-transform: uppercase;
-}
 
 /* Icon */
 .cmd-icon-wrap {
@@ -686,21 +506,21 @@
 
 .cmd-icon-ring--outer {
   inset: 0;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
-  box-shadow: 0 0 24px rgba(212, 175, 55, 0.12), inset 0 0 16px rgba(212, 175, 55, 0.06);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 70%);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.08), inset 0 0 10px rgba(212, 175, 55, 0.04);
 }
 
 .cmd-icon-ring--inner {
   inset: 18px;
-  border-color: rgba(212, 175, 55, 0.4);
-  background: rgba(212, 175, 55, 0.06);
+  border-color: rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.04);
 }
 
 .cmd-icon {
   color: var(--gold);
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
 }
 
 /* Title */
@@ -712,12 +532,11 @@
   color: var(--white);
   text-transform: uppercase;
   line-height: 1;
-  text-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
 }
 
 .cmd-panel--upload .cmd-title {
   color: #fff;
-  background: linear-gradient(135deg, #fff 30%, #D4AF37 100%);
+  background: linear-gradient(#fff 30%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -758,12 +577,11 @@
   height: 2px;
   border-radius: 2px;
   background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.6) 20%,
-    #D4AF37 50%,
-    rgba(212, 175, 55, 0.6) 80%,
-    transparent 100%
-  );
+      transparent 0%,
+      rgba(212, 175, 55, 0.6) 20%,
+      #D4AF37 50%,
+      rgba(212, 175, 55, 0.6) 80%,
+      transparent 100%);
   transform-origin: center;
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
   z-index: 5;

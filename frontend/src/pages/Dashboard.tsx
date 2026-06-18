@@ -112,24 +112,36 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    let hasStarted = false;
+
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        let start = 0;
-        const duration = 2000;
-        const step = (target / duration) * 16;
-        const timer = setInterval(() => {
-          start += step;
-          if (start >= target) {
-            setCount(target);
-            clearInterval(timer);
-          } else {
-            setCount(Math.floor(start));
-          }
-        }, 16);
+      if (entry.isIntersecting && !hasStarted) {
+        hasStarted = true;
+        
+        // Wait for the container's fade-in delay (2.2s) before counting
+        setTimeout(() => {
+          let start = 0;
+          const duration = 2000;
+          const step = (target / duration) * 16;
+          
+          timer = setInterval(() => {
+            start += step;
+            if (start >= target) {
+              setCount(target);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(start));
+            }
+          }, 16);
+        }, 2200);
       }
     });
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (timer) clearInterval(timer);
+    };
   }, [target]);
 
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
@@ -182,8 +194,8 @@ function CommandPanel({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
-      whileHover={{ y: -8, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       role="button"
       tabIndex={0}
       aria-label={title}
@@ -207,25 +219,10 @@ function CommandPanel({
         className="cmd-light-sweep"
         animate={isHovered ? {
           x: ["-100%", "200%"],
-          opacity: [0, 0.5, 0],
+          opacity: [0, 0.15, 0],
         } : { opacity: 0 }}
-        transition={{ duration: 1.0, repeat: isHovered ? Infinity : 0, repeatDelay: 1.5, ease: "easeInOut" }}
+        transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0, repeatDelay: 2, ease: "easeInOut" }}
       />
-
-      {/* Floating particles */}
-      <AnimatePresence>
-        {isHovered && particles.map((p, i) => (
-          <motion.div
-            key={i}
-            className="cmd-particle"
-            style={{ left: `${p.x}%`, bottom: "10%" }}
-            initial={{ opacity: 0, y: 0, scale: 0 }}
-            animate={{ opacity: [0, 1, 0], y: [0, -50, -80], scale: [0, 1, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 2, delay: p.delay, repeat: Infinity, ease: "easeOut" }}
-          />
-        ))}
-      </AnimatePresence>
 
       {/* Content */}
       <div className="cmd-content">
@@ -233,8 +230,8 @@ function CommandPanel({
         <motion.div
           className="cmd-icon-wrap"
           animate={{
-            rotate: isHovered ? (isUpload ? [0, -8, 8, 0] : [0, 8, -8, 0]) : 0,
-            scale: isHovered ? 1.12 : 1,
+            rotate: isHovered ? (isUpload ? [0, -3, 3, 0] : [0, 3, -3, 0]) : 0,
+            scale: isHovered ? 1.05 : 1,
           }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
         >
@@ -287,7 +284,7 @@ function CommandPanels({ onUpload, onGenerate }: { onUpload: () => void; onGener
         subtitle="Analyze Contracts & Legal Documents"
         onNavigate={onUpload}
         variant="upload"
-        delay={0.9}
+        delay={0.4}
       />
       <CommandPanel
         icon={Wand2}
@@ -295,7 +292,7 @@ function CommandPanels({ onUpload, onGenerate }: { onUpload: () => void; onGener
         subtitle="Create Legal Drafts with AI"
         onNavigate={onGenerate}
         variant="generate"
-        delay={1.1}
+        delay={0.4}
       />
     </div>
   );
