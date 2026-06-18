@@ -27,10 +27,10 @@ interface UploadPageProps {
 
 // Floating legal symbols config
 const LEGAL_SYMBOLS = [
-  { char: "§", top: "12%", left: "6%",  size: 22, opacity: 0.04 },
-  { char: "⚖", top: "30%", left: "3%",  size: 28, opacity: 0.035 },
-  { char: "§", top: "70%", left: "8%",  size: 18, opacity: 0.03 },
-  { char: "⚖", top: "85%", left: "4%",  size: 22, opacity: 0.04 },
+  { char: "§", top: "12%", left: "6%", size: 22, opacity: 0.04 },
+  { char: "⚖", top: "30%", left: "3%", size: 28, opacity: 0.035 },
+  { char: "§", top: "70%", left: "8%", size: 18, opacity: 0.03 },
+  { char: "⚖", top: "85%", left: "4%", size: 22, opacity: 0.04 },
   { char: "§", top: "18%", right: "5%", size: 24, opacity: 0.04 },
   { char: "⚖", top: "55%", right: "3%", size: 20, opacity: 0.035 },
   { char: "§", top: "78%", right: "7%", size: 26, opacity: 0.03 },
@@ -38,9 +38,9 @@ const LEGAL_SYMBOLS = [
 
 const TRUST_PILLS = [
   { icon: <ShieldCheck size={13} />, label: "Secure Processing" },
-  { icon: <Cpu size={13} />,         label: "AI Analysis" },
+  { icon: <Cpu size={13} />, label: "AI Analysis" },
   { icon: <AlertTriangle size={13} />, label: "Risk Detection" },
-  { icon: <Lock size={13} />,        label: "Privacy Protected" },
+  { icon: <Lock size={13} />, label: "Privacy Protected" },
 ];
 
 const fadeUp = {
@@ -329,9 +329,8 @@ export default function UploadPage({
                   id="btn-embed-document"
                   onClick={handleEmbed}
                   disabled={loading || embedded}
-                  className={`embed-button ${
-                    embedded ? "embed-button-success" : "embed-button-primary"
-                  }`}
+                  className={`embed-button ${embedded ? "embed-button-success" : "embed-button-primary"
+                    }`}
                 >
                   {loading ? (
                     <>

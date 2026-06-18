@@ -153,8 +153,17 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--gold-glow); }
-  50% { opacity: 0.6; box-shadow: 0 0 14px rgba(212, 175, 55, 0.5); }
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.5);
+  }
 }
 
 /* ─── Page Content ──────────────────────────────────────────── */
@@ -305,7 +314,9 @@
   opacity: 1;
 }
 
-.file-input { display: none; }
+.file-input {
+  display: none;
+}
 
 .upload-label {
   cursor: pointer;
@@ -415,7 +426,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Drag state overlay text */
@@ -438,8 +449,17 @@
 
 /* ─── Drag pulse animation ──────────────────────────────────── */
 @keyframes drag-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(0.97); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(0.97);
+  }
 }
 
 .upload-area.dragging .upload-label {
@@ -576,7 +596,7 @@
 /* Progress bar */
 .file-progress-bar {
   width: 100%;
-  max-width: 200px;
+  max-width: 300px;
   height: 3px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 99px;
@@ -590,6 +610,7 @@
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
   transition: width 0.6s ease;
+
 }
 
 /* Buttons in file card */
@@ -666,11 +687,20 @@
   flex-shrink: 0;
 }
 
-.error-message p { margin: 0; }
+.error-message p {
+  margin: 0;
+}
 
 /* ─── Spin Animation ────────────────────────────────────────── */
-@keyframes spin { to { transform: rotate(360deg); } }
-.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
 /* ─── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {

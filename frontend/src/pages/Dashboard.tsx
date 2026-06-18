@@ -112,19 +112,19 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     let hasStarted = false;
 
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !hasStarted) {
         hasStarted = true;
-        
+
         // Wait for the container's fade-in delay (2.2s) before counting
         setTimeout(() => {
           let start = 0;
           const duration = 2000;
           const step = (target / duration) * 16;
-          
+
           timer = setInterval(() => {
             start += step;
             if (start >= target) {

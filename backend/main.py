@@ -17,7 +17,7 @@ except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 nest_asyncio.apply()
 
-from backend.routers import analysis, documents, generate, qa  # noqa: E402
+from backend.routers import documents, generate  # noqa: E402
 
 
 @asynccontextmanager
@@ -36,13 +36,7 @@ app.add_middleware(
 )
 
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
-app.include_router(qa.router, prefix="/api/qa", tags=["qa"])
-app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
+
 app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 
 
-@app.get("/api/status")
-def status():
-    groq_key = bool(os.getenv("GROQ_API_KEY", "").strip())
-    openrouter_key = bool(os.getenv("OPENROUTER_API_KEY", "").strip())
-    return {"groq": groq_key, "openrouter": openrouter_key}
