@@ -8,6 +8,9 @@ export interface UploadResponse {
 
 export interface EmbedResponse {
   backend: string;
+  doc_count: number;
+  page_count: number;
+  clause_count: number;
 }
 
 

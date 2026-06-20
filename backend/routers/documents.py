@@ -29,10 +29,15 @@ async def embed_document(filename: str):
 
     civil_rag = load_json_list(RAG_PATH, key="civil_law_data")
     try:
-        vectors, backend_name, final_docs = vector_embedding(file_path, civil_rag)
+        vectors, backend_name, final_docs, page_count, clause_count = vector_embedding(file_path, civil_rag)
         state.vectors = vectors
         state.final_docs = final_docs
         state.embedding_backend = backend_name
-        return {"backend": backend_name, "doc_count": len(final_docs)}
+        return {
+            "backend": backend_name, 
+            "doc_count": len(final_docs),
+            "page_count": page_count,
+            "clause_count": clause_count
+        }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))

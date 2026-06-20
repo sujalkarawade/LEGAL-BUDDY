@@ -9,8 +9,8 @@ import GenerateDocumentPage from "./pages/GenerateDocumentPage";
 import DocumentIntelligencePage from "./pages/DocumentIntelligencePage";
 
 export default function App() {
-  const [filename, setFilename]   = useState<string | null>(null);
-  const [embedded, setEmbedded]   = useState<boolean>(false);
+  const [filename, setFilename]   = useState<string | null>(() => sessionStorage.getItem("filename"));
+  const [embedded, setEmbedded]   = useState<boolean>(() => sessionStorage.getItem("embedded") === "true");
   const [loading, setLoading]     = useState<boolean>(false);
   const [error, setError]         = useState<string>("");
 
@@ -23,7 +23,9 @@ export default function App() {
     try {
       const data = await uploadDocument(file);
       setFilename(data.filename);
+      sessionStorage.setItem("filename", data.filename);
       setEmbedded(false);
+      sessionStorage.setItem("embedded", "false");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -37,8 +39,9 @@ export default function App() {
     setLoading(true);
     try {
       const data = await embedDocument(filename);
-      setEmbedded(true);
       void data;
+      setEmbedded(true);
+      sessionStorage.setItem("embedded", "true");
       navigate("/analysis");
     } catch (e: any) {
       setError(e.message);

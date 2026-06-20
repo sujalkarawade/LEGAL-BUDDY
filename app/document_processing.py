@@ -25,9 +25,10 @@ def build_vector_store(all_docs: list[Document]) -> tuple[FAISS, str]:
     return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
 
 
-def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, list[Document]]:
+def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, list[Document], int, int]:
     loader = PyPDFLoader(str(path))
     docs = loader.load()
+    page_count = len(docs)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=PDF_CHUNK_SIZE,
         chunk_overlap=PDF_CHUNK_OVERLAP,
@@ -57,5 +58,11 @@ def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, lis
         rag_docs = [doc for doc in rag_docs if doc is not None]
 
     all_docs = pdf_docs + rag_docs
+    
+    unique_clauses = set()
+    for d in pdf_docs:
+        unique_clauses.update(d.metadata.get("clauses", []))
+    clause_count = len(unique_clauses)
+    
     vectors, backend_name = build_vector_store(all_docs)
-    return vectors, backend_name, all_docs
+    return vectors, backend_name, all_docs, page_count, clause_count
