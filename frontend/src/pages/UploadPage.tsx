@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   UploadCloud,
   File,
   Activity,
   Loader2,
   CheckCircle2,
-  FileText,
   ArrowLeft,
   ShieldCheck,
   Cpu,
@@ -43,23 +42,15 @@ const TRUST_PILLS = [
   { icon: <Lock size={13} />, label: "Privacy Protected" },
 ];
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
-  visible: (delay = 0) => ({
+  visible: (delay: number = 0) => ({
     opacity: 1,
     y: 0,
     transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
   }),
 };
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.88 },
-  visible: (delay = 0) => ({
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay },
-  }),
-};
 
 export default function UploadPage({
   filename,

@@ -1,52 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
-import { Scale, Upload, FileText, Shield, Search, Wand2, MessageSquare, CheckCircle, ArrowRight, Sparkles, Zap, Clock } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { Upload, FileText, Shield, Search, Wand2, MessageSquare, ArrowRight, Clock } from "lucide-react";
 import "./Dashboard.css";
 
-/* ─── Floating Particle ─────────────────────────────────────── */
-function Particle({ x, y, delay }: { x: number; y: number; delay: number }) {
-  return (
-    <motion.div
-      className="particle"
-      style={{ left: `${x}%`, top: `${y}%` }}
-      animate={{
-        y: [0, -30, 0],
-        opacity: [0, 1, 0],
-        scale: [0.5, 1.2, 0.5],
-      }}
-      transition={{
-        duration: 3 + Math.random() * 2,
-        repeat: Infinity,
-        delay,
-        ease: "easeInOut",
-      }}
-    />
-  );
-}
-
-/* ─── Legal Symbol Floater ──────────────────────────────────── */
-function LegalSymbol({ symbol, x, y, delay, size }: { symbol: string; x: number; y: number; delay: number; size: number }) {
-  return (
-    <motion.div
-      className="legal-symbol"
-      style={{ left: `${x}%`, top: `${y}%`, fontSize: size }}
-      animate={{
-        y: [0, -20, 0],
-        opacity: [0.03, 0.08, 0.03],
-        rotate: [0, 5, -5, 0],
-      }}
-      transition={{
-        duration: 8 + delay * 2,
-        repeat: Infinity,
-        delay,
-        ease: "easeInOut",
-      }}
-    >
-      {symbol}
-    </motion.div>
-  );
-}
 
 /* ─── Golden Light Streak ───────────────────────────────────── */
 function LightStreak({ delay, top }: { delay: number; top: number }) {
@@ -77,34 +34,6 @@ const badges = [
   { icon: MessageSquare, label: "AI Assistant" },
 ];
 
-/* ─── Floating Stat Card ────────────────────────────────────── */
-function FloatingCard({ value, label, icon: Icon, delay, className }: {
-  value: string; label: string; icon: React.ElementType; delay: number; className: string;
-}) {
-  return (
-    <motion.div
-      className={`floating-card ${className}`}
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 4 + delay, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div className="floating-card-inner">
-          <div className="floating-card-icon">
-            <Icon size={16} />
-          </div>
-          <div>
-            <div className="floating-card-value">{value}</div>
-            <div className="floating-card-label">{label}</div>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 /* ─── Animated Counter ──────────────────────────────────────── */
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -176,10 +105,6 @@ function CommandPanel({
     });
   };
 
-  const particles = Array.from({ length: 8 }, (_, i) => ({
-    x: 10 + i * 12,
-    delay: i * 0.3,
-  }));
 
   const isUpload = variant === "upload";
 
@@ -351,14 +276,6 @@ export default function Dashboard() {
         {/* Radial glow */}
         <div className="bg-radial-gold" />
         <div className="bg-radial-blue" />
-
-        {/* Legal symbols */}
-        <LegalSymbol symbol="⚖️" x={8} y={15} delay={0} size={80} />
-        <LegalSymbol symbol="§" x={85} y={70} delay={1} size={120} />
-        <LegalSymbol symbol="⚖️" x={70} y={10} delay={2} size={60} />
-        <LegalSymbol symbol="§" x={20} y={75} delay={0.5} size={90} />
-        <LegalSymbol symbol="©" x={50} y={85} delay={1.5} size={70} />
-        <LegalSymbol symbol="™" x={90} y={30} delay={3} size={60} />
 
         {/* Light streaks */}
         <LightStreak delay={0} top={20} />

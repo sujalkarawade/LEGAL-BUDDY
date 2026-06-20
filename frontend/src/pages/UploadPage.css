@@ -415,11 +415,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 99px;
-  padding: 3px 10px;
+  color: #8b8a8a;
 }
 
 .upload-zone-format-sep {
@@ -596,7 +592,7 @@
 /* Progress bar */
 .file-progress-bar {
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   height: 3px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 99px;
@@ -606,6 +602,7 @@
 
 .file-progress-fill {
   height: 100%;
+  max-width: 100%;
   border-radius: 99px;
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);

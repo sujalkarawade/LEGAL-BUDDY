@@ -8,33 +8,21 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.analysis import identify_clauses
 from app.config import (
-    FREE_TIER_EMBED_ITEM_BUDGET,
     OPENROUTER_API_KEY,
     OPENROUTER_EMBEDDING_MODEL,
     PDF_CHUNK_OVERLAP,
     PDF_CHUNK_SIZE,
 )
 from app.embeddings import (
-    build_local_embeddings,
     build_openrouter_embeddings,
-    summarize_embedding_failure,
 )
 
 
-def build_vector_store(all_docs: list[Document], prefer_local: bool = False) -> tuple[FAISS, str]:
-    if OPENROUTER_API_KEY and not prefer_local:
-        try:
-            vector_store = FAISS.from_documents(all_docs, build_openrouter_embeddings())
-            return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
-        except Exception as exc:
-            print(f"Warning: {summarize_embedding_failure(exc)}. Falling back to local embeddings.")
-    elif OPENROUTER_API_KEY and prefer_local:
-        print("Info: Large upload detected. Using local embeddings.")
-    else:
-        print("Info: OPENROUTER_API_KEY not found. Using local embeddings.")
-
-    vector_store = FAISS.from_documents(all_docs, build_local_embeddings())
-    return vector_store, "Local fallback"
+def build_vector_store(all_docs: list[Document]) -> tuple[FAISS, str]:
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY is not configured on the server.")
+    vector_store = FAISS.from_documents(all_docs, build_openrouter_embeddings())
+    return vector_store, f"OpenRouter ({OPENROUTER_EMBEDDING_MODEL})"
 
 
 def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, list[Document]]:
@@ -68,8 +56,6 @@ def vector_embedding(path: Path, civil_rag: list[dict]) -> tuple[FAISS, str, lis
         rag_docs = list(executor.map(process_rag_entry, civil_rag))
         rag_docs = [doc for doc in rag_docs if doc is not None]
 
-    total_embed_items = len(pdf_docs) + len(rag_docs)
     all_docs = pdf_docs + rag_docs
-    prefer_local = total_embed_items > FREE_TIER_EMBED_ITEM_BUDGET
-    vectors, backend_name = build_vector_store(all_docs, prefer_local=prefer_local)
+    vectors, backend_name = build_vector_store(all_docs)
     return vectors, backend_name, all_docs

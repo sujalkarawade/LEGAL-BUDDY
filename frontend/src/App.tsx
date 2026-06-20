@@ -6,6 +6,7 @@ import "./App.css";
 import Dashboard from "./pages/Dashboard";
 import UploadPage from "./pages/UploadPage";
 import GenerateDocumentPage from "./pages/GenerateDocumentPage";
+import DocumentIntelligencePage from "./pages/DocumentIntelligencePage";
 
 export default function App() {
   const [filename, setFilename]   = useState<string | null>(null);
@@ -38,7 +39,7 @@ export default function App() {
       const data = await embedDocument(filename);
       setEmbedded(true);
       void data;
-      // feature removed, stay on upload page for now
+      navigate("/analysis");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -66,6 +67,16 @@ export default function App() {
         />
 
         <Route path="/generate" element={<GenerateDocumentPage />} />
+
+        <Route
+          path="/analysis"
+          element={
+            <DocumentIntelligencePage
+              filename={filename}
+              embedded={embedded}
+            />
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
