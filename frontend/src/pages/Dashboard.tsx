@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Upload, FileText, Shield, Search, Wand2, MessageSquare, ArrowRight, Clock } from "lucide-react";
+import { FileText, Shield, Search, Wand2, MessageSquare, Clock } from "lucide-react";
 import "./Dashboard.css";
 
 
@@ -76,157 +76,9 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-/* ─── Command Panel ──────────────────────────────────────────── */
-function CommandPanel({
-  icon: Icon,
-  title,
-  subtitle,
-  onNavigate,
-  variant,
-  delay,
-}: {
-  icon: React.ElementType;
-  title: string;
-  subtitle: string;
-  onNavigate: () => void;
-  variant: "upload" | "generate";
-  delay: number;
-}) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = panelRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setMousePos({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    });
-  };
-
-
-  const isUpload = variant === "upload";
-
-  return (
-    <motion.div
-      ref={panelRef}
-      className={`cmd-panel cmd-panel--${variant}`}
-      initial={{ opacity: 0, x: 80, y: 20 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ delay, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      onClick={onNavigate}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onMouseMove={handleMouseMove}
-      whileHover={{ y: -4, scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
-      role="button"
-      tabIndex={0}
-      aria-label={title}
-      onKeyDown={e => e.key === "Enter" && onNavigate()}
-    >
-      {/* Dynamic cursor glow */}
-      <motion.div
-        className="cmd-cursor-glow"
-        animate={{
-          opacity: isHovered ? 1 : 0,
-          left: `${mousePos.x}%`,
-          top: `${mousePos.y}%`,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      />
-
-
-
-      {/* Light sweep */}
-      <motion.div
-        className="cmd-light-sweep"
-        animate={isHovered ? {
-          x: ["-100%", "200%"],
-          opacity: [0, 0.15, 0],
-        } : { opacity: 0 }}
-        transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0, repeatDelay: 2, ease: "easeInOut" }}
-      />
-
-      {/* Content */}
-      <div className="cmd-content">
-        {/* Icon */}
-        <motion.div
-          className="cmd-icon-wrap"
-          animate={{
-            rotate: isHovered ? (isUpload ? [0, -3, 3, 0] : [0, 3, -3, 0]) : 0,
-            scale: isHovered ? 1.05 : 1,
-          }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-        >
-          <div className="cmd-icon-ring cmd-icon-ring--outer" />
-          <div className="cmd-icon-ring cmd-icon-ring--inner" />
-          <Icon size={36} strokeWidth={1.2} className="cmd-icon" />
-        </motion.div>
-
-        {/* Title */}
-        <div className="cmd-title">{title}</div>
-
-        {/* Subtitle */}
-        <motion.div
-          className="cmd-subtitle"
-          animate={{ opacity: isHovered ? 1 : 0.55, y: isHovered ? 0 : 4 }}
-          transition={{ duration: 0.3 }}
-        >
-          {subtitle}
-        </motion.div>
-
-        {/* Hover arrow indicator */}
-        <motion.div
-          className="cmd-arrow"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
-          transition={{ duration: 0.25 }}
-        >
-          <ArrowRight size={16} />
-          <span>OPEN</span>
-        </motion.div>
-      </div>
-
-      {/* Bottom energy bar */}
-      <motion.div
-        className="cmd-energy-bar"
-        animate={{ scaleX: isHovered ? 1 : 0.3, opacity: isHovered ? 1 : 0.3 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      />
-    </motion.div>
-  );
-}
-
-/* ─── Right Panel Wrapper ────────────────────────────────────── */
-function CommandPanels({ onUpload, onGenerate }: { onUpload: () => void; onGenerate: () => void }) {
-  return (
-    <div className="cmd-panels">
-      <CommandPanel
-        icon={Upload}
-        title="UPLOAD"
-        subtitle="Analyze Contracts & Legal Documents"
-        onNavigate={onUpload}
-        variant="upload"
-        delay={0.4}
-      />
-      <CommandPanel
-        icon={Wand2}
-        title="GENERATE"
-        subtitle="Create Legal Drafts with AI"
-        onNavigate={onGenerate}
-        variant="generate"
-        delay={0.4}
-      />
-    </div>
-  );
-}
-
 
 /* ─── MAIN DASHBOARD ────────────────────────────────────────── */
 export default function Dashboard() {
-  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Cursor spotlight
@@ -393,13 +245,7 @@ export default function Dashboard() {
 
           </div>
 
-          {/* RIGHT: Command Panels */}
-          <div className="lb-right">
-            <CommandPanels
-              onUpload={() => navigate("/upload")}
-              onGenerate={() => navigate("/generate")}
-            />
-          </div>
+
         </div>
 
         {/* ── Stats Bar ── */}

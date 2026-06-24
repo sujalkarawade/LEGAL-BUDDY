@@ -17,7 +17,6 @@ except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 nest_asyncio.apply()
 
-from backend.routers import documents, generate  # noqa: E402
 
 
 @asynccontextmanager
@@ -34,9 +33,4 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
-
-app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
-
 
