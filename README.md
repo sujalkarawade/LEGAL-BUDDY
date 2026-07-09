@@ -105,8 +105,3 @@ Then open `http://localhost:5173`.
 - `OPENROUTER_API_KEY` — optional, used for embeddings. Falls back to local embeddings if missing or rate-limited.
 - `OPENROUTER_EMBEDDING_MODEL` — optional, defaults to `openai/text-embedding-3-small`.
 
-## Notes
-
-- Uploaded PDFs are saved to `uploaded_docs/`.
-- Session state (vector store, docs) is held in memory for the lifetime of the backend process.
-- The `app/` package contains all core logic and has no Streamlit dependencies.
